@@ -569,6 +569,7 @@ export type Database = {
           es_anonimo: boolean;
           estado: Database["public"]["Enums"]["estado_reporte"];
           id: string;
+          moderacion: Database["public"]["Enums"]["estado_moderacion"];
           resuelto_en: string | null;
           titulo: string;
           ubicacion: unknown;
@@ -585,6 +586,7 @@ export type Database = {
           es_anonimo?: boolean;
           estado?: Database["public"]["Enums"]["estado_reporte"];
           id?: string;
+          moderacion?: Database["public"]["Enums"]["estado_moderacion"];
           resuelto_en?: string | null;
           titulo: string;
           ubicacion: unknown;
@@ -601,6 +603,7 @@ export type Database = {
           es_anonimo?: boolean;
           estado?: Database["public"]["Enums"]["estado_reporte"];
           id?: string;
+          moderacion?: Database["public"]["Enums"]["estado_moderacion"];
           resuelto_en?: string | null;
           titulo?: string;
           ubicacion?: unknown;
@@ -773,7 +776,6 @@ export type Database = {
       };
       v_reportes_publicos: {
         Row: {
-          apoyos: number | null;
           categoria_id: number | null;
           comuna_id: number | null;
           creado_en: string | null;
@@ -781,13 +783,13 @@ export type Database = {
           direccion_referencia: string | null;
           estado: Database["public"]["Enums"]["estado_reporte"] | null;
           id: string | null;
+          latitud: number | null;
+          longitud: number | null;
           resuelto_en: string | null;
           titulo: string | null;
           ubicacion: unknown;
-          usuario_id: string | null;
         };
         Insert: {
-          apoyos?: never;
           categoria_id?: number | null;
           comuna_id?: number | null;
           creado_en?: string | null;
@@ -795,13 +797,13 @@ export type Database = {
           direccion_referencia?: string | null;
           estado?: Database["public"]["Enums"]["estado_reporte"] | null;
           id?: string | null;
+          latitud?: never;
+          longitud?: never;
           resuelto_en?: string | null;
           titulo?: string | null;
           ubicacion?: unknown;
-          usuario_id?: never;
         };
         Update: {
-          apoyos?: never;
           categoria_id?: number | null;
           comuna_id?: number | null;
           creado_en?: string | null;
@@ -809,10 +811,11 @@ export type Database = {
           direccion_referencia?: string | null;
           estado?: Database["public"]["Enums"]["estado_reporte"] | null;
           id?: string | null;
+          latitud?: never;
+          longitud?: never;
           resuelto_en?: string | null;
           titulo?: string | null;
           ubicacion?: unknown;
-          usuario_id?: never;
         };
         Relationships: [
           {
@@ -833,9 +836,31 @@ export type Database = {
       };
     };
     Functions: {
-      [_ in never]: never;
+      reportes_en_zona: {
+        Args: {
+          categorias?: number[];
+          estados?: Database["public"]["Enums"]["estado_reporte"][];
+          este: number;
+          norte: number;
+          oeste: number;
+          sur: number;
+        };
+        Returns: {
+          categoria_id: number;
+          creado_en: string;
+          descripcion: string;
+          direccion_referencia: string;
+          estado: Database["public"]["Enums"]["estado_reporte"];
+          id: string;
+          latitud: number;
+          longitud: number;
+          resuelto_en: string;
+          titulo: string;
+        }[];
+      };
     };
     Enums: {
+      estado_moderacion: "pendiente" | "aprobado" | "oculto";
       estado_obra: "programada" | "en_curso" | "finalizada" | "cancelada";
       estado_reporte:
         "recibido" | "en_revision" | "derivado" | "resuelto" | "rechazado";
@@ -982,6 +1007,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      estado_moderacion: ["pendiente", "aprobado", "oculto"],
       estado_obra: ["programada", "en_curso", "finalizada", "cancelada"],
       estado_reporte: [
         "recibido",
