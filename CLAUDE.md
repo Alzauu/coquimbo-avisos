@@ -57,4 +57,7 @@ docs                     plan de negocio y notas
 - `pnpm build` build de producción
 - `pnpm lint` / `pnpm typecheck` / `pnpm test`
 - `pnpm format` / `pnpm format:check` Prettier
+- `pnpm db:push` aplica migraciones al proyecto Supabase vinculado (remoto; no hay base local con Docker por ahora)
+- `pnpm db:types` regenera `apps/web/src/lib/supabase/database.types.ts`
 - Variables de entorno: copiar `.env.example` a `apps/web/.env.local`
+- PostGIS y citext viven en el esquema `extensions`: en SQL usa `extensions.geography`, `extensions.citext`, etc.

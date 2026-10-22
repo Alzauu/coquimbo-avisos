@@ -2,6 +2,10 @@ packages:
   - apps/*
   - packages/*
 
+# La CLI de Supabase descarga su binario en el postinstall.
+onlyBuiltDependencies:
+  - supabase
+
 # Dependencias de Next/ESLint con scripts de instalación que no necesitamos ejecutar.
 ignoredBuiltDependencies:
   - sharp

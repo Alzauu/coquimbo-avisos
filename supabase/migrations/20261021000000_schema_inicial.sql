@@ -4,8 +4,10 @@
 -- Diseñado para expandirse región a región.
 -- =====================================================================
 
-CREATE EXTENSION IF NOT EXISTS postgis;
-CREATE EXTENSION IF NOT EXISTS citext;
+-- En el esquema extensions (convención de Supabase) para no exponer
+-- spatial_ref_sys ni funciones de las extensiones a través de la API.
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA extensions;
 
 -- ---------------------------------------------------------------------
 -- Tipos enumerados
@@ -51,7 +53,7 @@ CREATE TABLE comunas (
     provincia_id  SMALLINT    NOT NULL REFERENCES provincias(id),
     codigo        VARCHAR(5)  NOT NULL UNIQUE,     -- código CUT, ej. '04101'
     nombre        VARCHAR(80) NOT NULL,
-    limites       geography(MultiPolygon, 4326),   -- opcional, para validar ubicación
+    limites       extensions.geography(MultiPolygon, 4326),   -- opcional, para validar ubicación
     activa        BOOLEAN     NOT NULL DEFAULT FALSE
 );
 CREATE INDEX idx_comunas_provincia ON comunas(provincia_id);
@@ -62,7 +64,7 @@ CREATE INDEX idx_comunas_limites   ON comunas USING GIST (limites);
 -- =====================================================================
 CREATE TABLE usuarios (
     id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email                  CITEXT      NOT NULL UNIQUE,
+    email                  extensions.CITEXT NOT NULL UNIQUE,
     password_hash          TEXT        NOT NULL,
     nombre                 VARCHAR(100) NOT NULL,
     comuna_id              SMALLINT    REFERENCES comunas(id),
@@ -110,7 +112,7 @@ CREATE TABLE entidades (
     tipo        tipo_entidad  NOT NULL,
     comuna_id   SMALLINT      REFERENCES comunas(id),   -- NULL si es regional/nacional
     sitio_web   TEXT,
-    email_contacto CITEXT,
+    email_contacto extensions.CITEXT,
     UNIQUE (nombre, comuna_id)
 );
 
@@ -124,7 +126,7 @@ CREATE TABLE reportes (
     comuna_id            SMALLINT       NOT NULL REFERENCES comunas(id),
     titulo               VARCHAR(140)   NOT NULL,
     descripcion          TEXT,
-    ubicacion            geography(Point, 4326) NOT NULL,
+    ubicacion            extensions.geography(Point, 4326) NOT NULL,
     direccion_referencia VARCHAR(200),
     estado               estado_reporte NOT NULL DEFAULT 'recibido',
     es_anonimo           BOOLEAN        NOT NULL DEFAULT FALSE,   -- no se muestra el autor al público
@@ -190,7 +192,7 @@ CREATE TABLE obras (
     comuna_id        SMALLINT     NOT NULL REFERENCES comunas(id),
     titulo           VARCHAR(160) NOT NULL,
     descripcion      TEXT,
-    ubicacion        geography(Geometry, 4326) NOT NULL,   -- punto, línea (calle) o polígono (sector)
+    ubicacion        extensions.geography(Geometry, 4326) NOT NULL,   -- punto, línea (calle) o polígono (sector)
     direccion_referencia VARCHAR(200),
     estado           estado_obra  NOT NULL DEFAULT 'programada',
     fecha_inicio     DATE         NOT NULL,
