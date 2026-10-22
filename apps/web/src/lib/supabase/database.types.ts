@@ -82,7 +82,7 @@ export type Database = {
             foreignKeyName: "comentarios_usuario_id_fkey";
             columns: ["usuario_id"];
             isOneToOne: false;
-            referencedRelation: "usuarios";
+            referencedRelation: "perfiles";
             referencedColumns: ["id"];
           },
         ];
@@ -149,7 +149,7 @@ export type Database = {
             foreignKeyName: "dispositivos_usuario_id_fkey";
             columns: ["usuario_id"];
             isOneToOne: false;
-            referencedRelation: "usuarios";
+            referencedRelation: "perfiles";
             referencedColumns: ["id"];
           },
         ];
@@ -259,7 +259,7 @@ export type Database = {
             foreignKeyName: "notificaciones_usuario_id_fkey";
             columns: ["usuario_id"];
             isOneToOne: false;
-            referencedRelation: "usuarios";
+            referencedRelation: "perfiles";
             referencedColumns: ["id"];
           },
         ];
@@ -338,7 +338,7 @@ export type Database = {
             foreignKeyName: "obras_creado_por_fkey";
             columns: ["creado_por"];
             isOneToOne: false;
-            referencedRelation: "usuarios";
+            referencedRelation: "perfiles";
             referencedColumns: ["id"];
           },
           {
@@ -349,6 +349,30 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      perfiles: {
+        Row: {
+          actualizado_en: string;
+          creado_en: string;
+          id: string;
+          nombre_visible: string | null;
+          rol: Database["public"]["Enums"]["rol_usuario"];
+        };
+        Insert: {
+          actualizado_en?: string;
+          creado_en?: string;
+          id: string;
+          nombre_visible?: string | null;
+          rol?: Database["public"]["Enums"]["rol_usuario"];
+        };
+        Update: {
+          actualizado_en?: string;
+          creado_en?: string;
+          id?: string;
+          nombre_visible?: string | null;
+          rol?: Database["public"]["Enums"]["rol_usuario"];
+        };
+        Relationships: [];
       };
       provincias: {
         Row: {
@@ -435,7 +459,7 @@ export type Database = {
             foreignKeyName: "reporte_apoyos_usuario_id_fkey";
             columns: ["usuario_id"];
             isOneToOne: false;
-            referencedRelation: "usuarios";
+            referencedRelation: "perfiles";
             referencedColumns: ["id"];
           },
         ];
@@ -514,7 +538,7 @@ export type Database = {
             foreignKeyName: "reporte_historial_cambiado_por_fkey";
             columns: ["cambiado_por"];
             isOneToOne: false;
-            referencedRelation: "usuarios";
+            referencedRelation: "perfiles";
             referencedColumns: ["id"];
           },
           {
@@ -608,7 +632,7 @@ export type Database = {
             foreignKeyName: "reportes_usuario_id_fkey";
             columns: ["usuario_id"];
             isOneToOne: false;
-            referencedRelation: "usuarios";
+            referencedRelation: "perfiles";
             referencedColumns: ["id"];
           },
         ];
@@ -654,66 +678,7 @@ export type Database = {
             foreignKeyName: "suscripciones_usuario_id_fkey";
             columns: ["usuario_id"];
             isOneToOne: false;
-            referencedRelation: "usuarios";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      usuarios: {
-        Row: {
-          acepto_terminos_en: string;
-          activo: boolean;
-          actualizado_en: string;
-          comuna_id: number | null;
-          creado_en: string;
-          eliminado_en: string | null;
-          email: string;
-          id: string;
-          nombre: string;
-          password_hash: string;
-          rol: Database["public"]["Enums"]["rol_usuario"];
-          ultimo_acceso_en: string | null;
-          version_privacidad: string;
-          version_terminos: string;
-        };
-        Insert: {
-          acepto_terminos_en: string;
-          activo?: boolean;
-          actualizado_en?: string;
-          comuna_id?: number | null;
-          creado_en?: string;
-          eliminado_en?: string | null;
-          email: string;
-          id?: string;
-          nombre: string;
-          password_hash: string;
-          rol?: Database["public"]["Enums"]["rol_usuario"];
-          ultimo_acceso_en?: string | null;
-          version_privacidad: string;
-          version_terminos: string;
-        };
-        Update: {
-          acepto_terminos_en?: string;
-          activo?: boolean;
-          actualizado_en?: string;
-          comuna_id?: number | null;
-          creado_en?: string;
-          eliminado_en?: string | null;
-          email?: string;
-          id?: string;
-          nombre?: string;
-          password_hash?: string;
-          rol?: Database["public"]["Enums"]["rol_usuario"];
-          ultimo_acceso_en?: string | null;
-          version_privacidad?: string;
-          version_terminos?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "usuarios_comuna_id_fkey";
-            columns: ["comuna_id"];
-            isOneToOne: false;
-            referencedRelation: "comunas";
+            referencedRelation: "perfiles";
             referencedColumns: ["id"];
           },
         ];
@@ -794,7 +759,7 @@ export type Database = {
             foreignKeyName: "obras_creado_por_fkey";
             columns: ["creado_por"];
             isOneToOne: false;
-            referencedRelation: "usuarios";
+            referencedRelation: "perfiles";
             referencedColumns: ["id"];
           },
           {
