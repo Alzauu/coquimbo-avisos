@@ -53,6 +53,8 @@ docs                     plan de negocio y notas
 
 ## Comandos
 
-(Completar cuando exista el proyecto)
-- `pnpm dev` servidor de desarrollo
+- `pnpm dev` servidor de desarrollo (apps/web, http://localhost:3000)
+- `pnpm build` build de producción
 - `pnpm lint` / `pnpm typecheck` / `pnpm test`
+- `pnpm format` / `pnpm format:check` Prettier
+- Variables de entorno: copiar `.env.example` a `apps/web/.env.local`

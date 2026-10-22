@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Dependencias de Next/ESLint con scripts de instalación que no necesitamos ejecutar.
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver
