@@ -119,6 +119,18 @@ export default async function MisReportesPage({
                   </span>
                   . {EXPLICACION_MODERACION[reporte.moderacion]}
                 </dd>
+                {/* Solo el motivo: nunca quién moderó. El tipo generado no
+                    marca la columna como opcional, pero viene NULL si no
+                    hubo rechazo. */}
+                {reporte.moderacion === "rechazado" &&
+                  reporte.motivo_rechazo && (
+                    <>
+                      <dt className="font-medium">Motivo</dt>
+                      <dd className="break-words whitespace-pre-line">
+                        {reporte.motivo_rechazo}
+                      </dd>
+                    </>
+                  )}
                 {/* El estado del problema solo tiene sentido una vez publicado. */}
                 {reporte.moderacion === "aprobado" && (
                   <>

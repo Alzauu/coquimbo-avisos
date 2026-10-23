@@ -39,7 +39,7 @@ export const largo = (texto: string) => [...texto].length;
 // Caracteres de control y de dirección de texto (se usan para disfrazar
 // contenido). En textos largos se permiten saltos de línea y tabulaciones.
 const CARACTERES_NO_PERMITIDOS = /[\p{Cc}‪-‮⁦-⁩]/u;
-const sinControles = (texto: string, permitirSaltos: boolean) =>
+export const sinControles = (texto: string, permitirSaltos: boolean) =>
   !CARACTERES_NO_PERMITIDOS.test(
     permitirSaltos ? texto.replace(/[\n\t]/g, "") : texto,
   );
@@ -49,7 +49,7 @@ const textoEnLinea = (valor: unknown) =>
   typeof valor === "string" ? valor.trim().replace(/\s+/g, " ") : valor;
 
 // Texto largo: recorta y normaliza saltos de línea de Windows.
-const textoLargo = (valor: unknown) =>
+export const textoLargo = (valor: unknown) =>
   typeof valor === "string" ? valor.replace(/\r\n?/g, "\n").trim() : valor;
 
 // Campo opcional: vacío o ausente equivale a null.

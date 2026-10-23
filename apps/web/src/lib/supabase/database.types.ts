@@ -508,31 +508,43 @@ export type Database = {
       };
       reporte_historial: {
         Row: {
+          accion: Database["public"]["Enums"]["accion_historial"];
           cambiado_por: string | null;
           creado_en: string;
           estado_anterior: Database["public"]["Enums"]["estado_reporte"] | null;
           estado_nuevo: Database["public"]["Enums"]["estado_reporte"];
+          foto_id: number | null;
           id: number;
+          moderacion_anterior: Database["public"]["Enums"]["estado_moderacion"];
+          moderacion_nueva: Database["public"]["Enums"]["estado_moderacion"];
           nota: string | null;
           reporte_id: string;
         };
         Insert: {
+          accion: Database["public"]["Enums"]["accion_historial"];
           cambiado_por?: string | null;
           creado_en?: string;
           estado_anterior?:
             Database["public"]["Enums"]["estado_reporte"] | null;
           estado_nuevo: Database["public"]["Enums"]["estado_reporte"];
+          foto_id?: number | null;
           id?: number;
+          moderacion_anterior: Database["public"]["Enums"]["estado_moderacion"];
+          moderacion_nueva: Database["public"]["Enums"]["estado_moderacion"];
           nota?: string | null;
           reporte_id: string;
         };
         Update: {
+          accion?: Database["public"]["Enums"]["accion_historial"];
           cambiado_por?: string | null;
           creado_en?: string;
           estado_anterior?:
             Database["public"]["Enums"]["estado_reporte"] | null;
           estado_nuevo?: Database["public"]["Enums"]["estado_reporte"];
+          foto_id?: number | null;
           id?: number;
+          moderacion_anterior?: Database["public"]["Enums"]["estado_moderacion"];
+          moderacion_nueva?: Database["public"]["Enums"]["estado_moderacion"];
           nota?: string | null;
           reporte_id?: string;
         };
@@ -542,6 +554,13 @@ export type Database = {
             columns: ["cambiado_por"];
             isOneToOne: false;
             referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reporte_historial_foto_id_fkey";
+            columns: ["foto_id"];
+            isOneToOne: false;
+            referencedRelation: "reporte_fotos";
             referencedColumns: ["id"];
           },
           {
@@ -839,7 +858,17 @@ export type Database = {
       };
     };
     Functions: {
+      aprobar_reporte: { Args: { reporte: string }; Returns: undefined };
+      cambiar_estado_reporte: {
+        Args: {
+          nuevo: Database["public"]["Enums"]["estado_reporte"];
+          reporte: string;
+        };
+        Returns: undefined;
+      };
       es_mi_reporte_pendiente: { Args: { reporte: string }; Returns: boolean };
+      es_moderador: { Args: never; Returns: boolean };
+      exigir_moderador: { Args: never; Returns: undefined };
       mis_reportes: {
         Args: never;
         Returns: {
@@ -853,14 +882,34 @@ export type Database = {
           latitud: number;
           longitud: number;
           moderacion: Database["public"]["Enums"]["estado_moderacion"];
+          motivo_rechazo: string;
           titulo: string;
         }[];
+      };
+      moderar_reporte: {
+        Args: {
+          accion: Database["public"]["Enums"]["accion_historial"];
+          esperada: Database["public"]["Enums"]["estado_moderacion"];
+          nota: string;
+          nueva: Database["public"]["Enums"]["estado_moderacion"];
+          reporte: string;
+        };
+        Returns: undefined;
+      };
+      ocultar_foto: { Args: { foto: number }; Returns: undefined };
+      ocultar_reporte: {
+        Args: { motivo?: string; reporte: string };
+        Returns: undefined;
       };
       puede_registrar_foto: {
         Args: { reporte: string; ruta: string };
         Returns: boolean;
       };
       puede_subir_foto_reporte: { Args: { nombre: string }; Returns: boolean };
+      rechazar_reporte: {
+        Args: { motivo: string; reporte: string };
+        Returns: undefined;
+      };
       reportes_en_zona: {
         Args: {
           categorias?: number[];
@@ -883,9 +932,34 @@ export type Database = {
           titulo: string;
         }[];
       };
+      reportes_pendientes: {
+        Args: never;
+        Returns: {
+          categoria_id: number;
+          creado_en: string;
+          descripcion: string;
+          direccion_referencia: string;
+          fotos: Json;
+          id: string;
+          latitud: number;
+          longitud: number;
+          titulo: string;
+        }[];
+      };
+      ruta_foto_publica: { Args: { foto: number }; Returns: string };
+      validar_nota_moderacion: {
+        Args: { nota: string; obligatoria: boolean };
+        Returns: string;
+      };
     };
     Enums: {
-      estado_moderacion: "pendiente" | "aprobado" | "oculto";
+      accion_historial:
+        | "aprobar"
+        | "rechazar"
+        | "ocultar_reporte"
+        | "ocultar_foto"
+        | "cambiar_estado";
+      estado_moderacion: "pendiente" | "aprobado" | "oculto" | "rechazado";
       estado_obra: "programada" | "en_curso" | "finalizada" | "cancelada";
       estado_reporte:
         "recibido" | "en_revision" | "derivado" | "resuelto" | "rechazado";
@@ -1032,7 +1106,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      estado_moderacion: ["pendiente", "aprobado", "oculto"],
+      accion_historial: [
+        "aprobar",
+        "rechazar",
+        "ocultar_reporte",
+        "ocultar_foto",
+        "cambiar_estado",
+      ],
+      estado_moderacion: ["pendiente", "aprobado", "oculto", "rechazado"],
       estado_obra: ["programada", "en_curso", "finalizada", "cancelada"],
       estado_reporte: [
         "recibido",

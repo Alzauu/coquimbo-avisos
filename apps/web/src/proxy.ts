@@ -6,7 +6,12 @@ import { getSupabaseEnv } from "@/lib/supabase/env";
 
 // Rutas que exigen sesión. Las páginas también lo verifican por su cuenta:
 // el proxy no debe ser la única barrera.
-const RUTAS_PROTEGIDAS = ["/perfil", "/reportar", "/mis-reportes"];
+const RUTAS_PROTEGIDAS = [
+  "/perfil",
+  "/reportar",
+  "/mis-reportes",
+  "/moderacion",
+];
 
 function esRutaProtegida(ruta: string) {
   return RUTAS_PROTEGIDAS.some(
@@ -66,7 +71,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Todo menos archivos estáticos e imágenes.
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // Todo menos archivos estáticos e imágenes (incluidas las fotos
+    // públicas de /fotos, que no usan la sesión).
+    "/((?!_next/static|_next/image|fotos/|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

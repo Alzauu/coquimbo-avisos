@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 import {
@@ -89,6 +90,14 @@ export function ListaReportes({
                   `. Resuelto el ${formatearFecha(reporte.resuelto_en)}`}
                 .
               </p>
+              {/* Al elegir un punto en el mapa se abre este mismo detalle. */}
+              <Link
+                href={`/reporte/${reporte.id}`}
+                className="mt-1 self-start font-medium underline"
+              >
+                Ver detalle
+                <span className="sr-only"> de «{reporte.titulo}»</span>
+              </Link>
             </div>
           </li>
         );

@@ -42,12 +42,14 @@ export const NOMBRE_MODERACION: Record<EstadoModeracion, string> = {
   pendiente: "Pendiente de revisión",
   aprobado: "Publicado",
   oculto: "Oculto",
+  rechazado: "No publicado",
 };
 
 export const EXPLICACION_MODERACION: Record<EstadoModeracion, string> = {
   pendiente: "Lo revisaremos antes de mostrarlo en el mapa público.",
   aprobado: "Se muestra en el mapa público.",
   oculto: "Moderación lo retiró del mapa público.",
+  rechazado: "Moderación lo revisó y decidió no publicarlo.",
 };
 
 // Colores distinguibles entre sí y con buen contraste sobre el mapa. El
