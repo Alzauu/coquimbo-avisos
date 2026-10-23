@@ -122,6 +122,36 @@ export type Database = {
           },
         ];
       };
+      cortes_luz: {
+        Row: {
+          creado_en: string;
+          descripcion: string | null;
+          geometria: Json;
+          id: number;
+          latitud: number;
+          longitud: number;
+          nombre: string;
+        };
+        Insert: {
+          creado_en?: string;
+          descripcion?: string | null;
+          geometria: Json;
+          id?: never;
+          latitud: number;
+          longitud: number;
+          nombre: string;
+        };
+        Update: {
+          creado_en?: string;
+          descripcion?: string | null;
+          geometria?: Json;
+          id?: never;
+          latitud?: number;
+          longitud?: number;
+          nombre?: string;
+        };
+        Relationships: [];
+      };
       dispositivos: {
         Row: {
           creado_en: string;
@@ -1035,6 +1065,7 @@ export type Database = {
         Args: { motivo: string; reporte: string };
         Returns: undefined;
       };
+      reemplazar_cortes_luz: { Args: { cortes: Json }; Returns: number };
       reportes_en_zona: {
         Args: {
           categorias?: number[];

@@ -195,3 +195,112 @@ describe("función reportes_en_zona como anon", () => {
     expect(idsDeSeed(data)).toEqual([]);
   });
 });
+
+// Cortes de luz (los carga scripts/cge_cortes.py con service_role). Estos
+// tests no reemplazan los datos reales: solo prueban permisos y llamadas
+// que fallan antes de cambiar nada (una transacción fallida no deja huella).
+describe("tabla cortes_luz", () => {
+  const corteValido = {
+    nombre: "Corte de prueba de test:rls",
+    descripcion: "No debe quedar guardado.",
+    latitud: -29.905,
+    longitud: -71.25,
+  };
+
+  it("anon la lee", async () => {
+    const { error } = await anon
+      .from("cortes_luz")
+      .select(
+        "id, nombre, descripcion, latitud, longitud, geometria, creado_en",
+      )
+      .limit(1);
+    expect(error).toBeNull();
+  });
+
+  it("anon no puede insertar, editar ni borrar", async () => {
+    const insercion = await anon.from("cortes_luz").insert(corteValido);
+    const edicion = await anon
+      .from("cortes_luz")
+      .update({ nombre: "Cambio" })
+      .gt("id", 0);
+    const borrado = await anon.from("cortes_luz").delete().gt("id", 0);
+    expect(insercion.error?.code).toBe(PERMISO_DENEGADO);
+    expect(edicion.error?.code).toBe(PERMISO_DENEGADO);
+    expect(borrado.error?.code).toBe(PERMISO_DENEGADO);
+  });
+
+  it("anon no puede ejecutar reemplazar_cortes_luz", async () => {
+    const { error } = await anon.rpc("reemplazar_cortes_luz", {
+      cortes: [corteValido],
+    });
+    expect(error?.code).toBe(PERMISO_DENEGADO);
+  });
+
+  it("con service_role, una carga no válida falla entera", async () => {
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceKey) {
+      throw new Error(
+        "Falta SUPABASE_SERVICE_ROLE_KEY en apps/web/.env.test.local.",
+      );
+    }
+    const servicio = createClient(url, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    const noEsArreglo = await servicio.rpc("reemplazar_cortes_luz", {
+      cortes: { nombre: "x" },
+    });
+    expect(noEsArreglo.error?.code).toBe("22023");
+
+    // Un corte fuera de la región viola el CHECK: el DELETE previo se
+    // deshace junto con todo lo demás.
+    const fueraDeLaRegion = await servicio.rpc("reemplazar_cortes_luz", {
+      cortes: [corteValido, { ...corteValido, latitud: -33.45 }],
+    });
+    expect(fueraDeLaRegion.error?.code).toBe("23514");
+
+    // Geometría con un tipo no permitido o que PostGIS no puede leer: falla
+    // la carga entera, aunque el resto de los cortes sea válido.
+    const poligono = {
+      type: "Polygon",
+      coordinates: [
+        [
+          [-71.26, -29.91],
+          [-71.24, -29.91],
+          [-71.24, -29.89],
+          [-71.26, -29.91],
+        ],
+      ],
+    };
+    const tipoNoPermitido = await servicio.rpc("reemplazar_cortes_luz", {
+      cortes: [
+        { ...corteValido, geometria: poligono },
+        {
+          ...corteValido,
+          geometria: {
+            type: "LineString",
+            coordinates: [
+              [0, 0],
+              [1, 1],
+            ],
+          },
+        },
+      ],
+    });
+    expect(tipoNoPermitido.error?.code).toBe("23514");
+
+    const malFormada = await servicio.rpc("reemplazar_cortes_luz", {
+      cortes: [
+        { ...corteValido, geometria: poligono },
+        { ...corteValido, geometria: { type: "Polygon", coordinates: "x" } },
+      ],
+    });
+    expect(malFormada.error).not.toBeNull();
+
+    const { data } = await servicio
+      .from("cortes_luz")
+      .select("id")
+      .eq("nombre", corteValido.nombre);
+    expect(data).toEqual([]);
+  });
+});

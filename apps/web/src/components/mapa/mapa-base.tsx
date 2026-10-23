@@ -18,6 +18,7 @@ const TEXTOS_CONTROLES: Record<string, string> = {
   "NavigationControl.ResetBearing": "Orientar hacia el norte",
   "AttributionControl.ToggleAttribution": "Mostrar u ocultar créditos",
   "AttributionControl.MapFeedback": "Informar un error del mapa",
+  "Popup.Close": "Cerrar",
 };
 
 const IMAGEN_VACIA = { width: 1, height: 1, data: new Uint8Array(4) };

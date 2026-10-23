@@ -30,6 +30,23 @@ Tareas acordadas que quedaron fuera de un cambio y no deben olvidarse.
   política de Storage solo deja borrar archivos de reportes que ya no
   existen, así que se borra al eliminar el reporte; no hay limpieza antes.
 
+## Cortes de luz (CGE)
+
+- **Alternativa accesible a las áreas del mapa.** Los cortes solo se ven
+  como áreas rojas (o un círculo si no hay área) y su detalle solo aparece
+  al hacer clic; no hay una lista navegable con teclado como la de los
+  reportes. Falta también una leyenda que explique el color.
+- **Datos viejos si el script se detiene.** `cortes_luz` conserva la última
+  carga buena; si `scripts/cge_cortes.py` deja de correr (o CGE cambia la
+  clave o el formato del KMZ), el mapa muestra cortes que quizá ya se
+  repararon. El popup indica la hora de actualización; falta ocultarlos o
+  avisar cuando la carga tenga más de unos minutos.
+- **Ejecución del script.** Hoy es un `while True` en un equipo propio.
+  Pasarlo a una tarea programada en un servidor (y documentar dónde vive su
+  `service_role`).
+- **Fuente sin acuerdo formal.** Se usa el mapa público de afectaciones de
+  CGE con su clave, sin un acceso oficial ni autorización por escrito.
+
 ## Fotos
 
 - **Generar la versión mediana al subir la foto.** Hoy `/fotos/[id]?tam=m`

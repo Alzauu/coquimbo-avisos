@@ -150,3 +150,7 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Respaldos locales de scripts/cge_cortes.py (se generan cada minuto)
+scripts/coquimbo/
+scripts/chile/

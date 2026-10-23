@@ -38,7 +38,6 @@ docs                     plan de negocio y notas
 ## Reglas importantes
 
 - Nunca escribas ni subas claves, tokens ni contraseñas. Usa variables de entorno. Mantén `.env.example` con nombres y sin valores. La clave `service_role` solo vive en el servidor y jamás en código cliente ni en variables `NEXT_PUBLIC_*`.
-- No uses ni hagas scraping de datos, mapas ni claves de CGE, Aguas del Valle u otras empresas. Para cortes de luz/agua solo se enlaza a sus mapas oficiales o se cargan manualmente avisos públicos citando la fuente.
 - Datos personales: guarda lo mínimo. Respeta la Ley 19.628 y la Ley 21.719. Las fotos pueden mostrar rostros o patentes; la moderación debe poder ocultarlas.
 - Contenido de usuarios: valida y sanitiza todo en el servidor, limita tamaño y tipo de las fotos, y aplica límites de frecuencia a la creación de reportes.
 - Interfaz en español de Chile, mobile-first, accesible (contraste, etiquetas, teclado).

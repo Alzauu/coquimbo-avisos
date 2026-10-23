@@ -6,3 +6,6 @@ coverage
 next-env.d.ts
 /supabase
 apps/web/public/vendor
+
+# Entorno virtual de Python de scripts/ (paquetes de terceros)
+scripts/venv
