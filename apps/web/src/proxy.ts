@@ -6,7 +6,7 @@ import { getSupabaseEnv } from "@/lib/supabase/env";
 
 // Rutas que exigen sesión. Las páginas también lo verifican por su cuenta:
 // el proxy no debe ser la única barrera.
-const RUTAS_PROTEGIDAS = ["/perfil"];
+const RUTAS_PROTEGIDAS = ["/perfil", "/reportar", "/mis-reportes"];
 
 function esRutaProtegida(ruta: string) {
   return RUTAS_PROTEGIDAS.some(

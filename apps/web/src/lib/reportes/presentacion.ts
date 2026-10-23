@@ -36,6 +36,20 @@ export const NOMBRE_ESTADO: Record<EstadoReporte, string> = {
   rechazado: "Rechazado",
 };
 
+export type EstadoModeracion = Database["public"]["Enums"]["estado_moderacion"];
+
+export const NOMBRE_MODERACION: Record<EstadoModeracion, string> = {
+  pendiente: "Pendiente de revisión",
+  aprobado: "Publicado",
+  oculto: "Oculto",
+};
+
+export const EXPLICACION_MODERACION: Record<EstadoModeracion, string> = {
+  pendiente: "Lo revisaremos antes de mostrarlo en el mapa público.",
+  aprobado: "Se muestra en el mapa público.",
+  oculto: "Moderación lo retiró del mapa público.",
+};
+
 // Colores distinguibles entre sí y con buen contraste sobre el mapa. El
 // color nunca es la única pista: la lista y los filtros muestran el nombre.
 const COLOR_POR_CODIGO: Record<string, string> = {

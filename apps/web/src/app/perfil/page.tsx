@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { cerrarSesion } from "@/app/auth/acciones";
@@ -52,6 +53,32 @@ export default async function PerfilPage() {
           <FormularioNombre nombreActual={perfil.nombre_visible ?? ""} />
         </>
       )}
+
+      <nav
+        aria-labelledby="titulo-tus-reportes"
+        className="flex flex-col gap-2"
+      >
+        <h2 id="titulo-tus-reportes" className="font-bold">
+          Tus reportes
+        </h2>
+        <ul className="flex flex-col gap-2">
+          <li>
+            <Link href="/reportar" className="underline">
+              Reportar un problema
+            </Link>
+          </li>
+          <li>
+            <Link href="/mis-reportes" className="underline">
+              Ver mis reportes
+            </Link>
+          </li>
+          <li>
+            <Link href="/" className="underline">
+              Volver al mapa
+            </Link>
+          </li>
+        </ul>
+      </nav>
 
       <form action={cerrarSesion}>
         <button
