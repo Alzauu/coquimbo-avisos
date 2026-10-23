@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
+import { ordenDeCategoria } from "@/lib/reportes/categorias";
 import { formatearFecha, NOMBRE_MODERACION } from "@/lib/reportes/presentacion";
 
 import { clienteAdmin } from "../acceso";
@@ -32,10 +33,13 @@ export default async function EditarReportePage({
   // Las categorías activas y, si ya no lo está, la actual del reporte.
   const { data: categorias } = await supabase
     .from("categorias")
-    .select("id, nombre")
+    .select("id, codigo, nombre")
     .eq("tipo", "reporte")
     .or(`activa.eq.true,id.eq.${reporte.categoria_id}`)
     .order("id");
+  categorias?.sort(
+    (a, b) => ordenDeCategoria(a.codigo) - ordenDeCategoria(b.codigo),
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8">

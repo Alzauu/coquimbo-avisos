@@ -9,3 +9,5 @@ apps/web/public/vendor
 
 # Entorno virtual de Python de scripts/ (paquetes de terceros)
 scripts/venv
+# Entorno virtual de Python en la raíz (paquetes de terceros)
+venv

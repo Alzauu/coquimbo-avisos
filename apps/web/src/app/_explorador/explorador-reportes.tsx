@@ -3,13 +3,13 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { categoriaDe } from "@/lib/reportes/categorias";
 import {
   type Categoria,
-  COLOR_SIN_CATEGORIA,
-  colorDeCategoria,
   type EstadoPublico,
   ESTADOS_PUBLICOS,
   filtroDeSeleccion,
+  prepararCategorias,
   type ReportePublico,
   ZONA_INICIAL,
 } from "@/lib/reportes/presentacion";
@@ -50,29 +50,30 @@ function alternar<T>(conjunto: ReadonlySet<T>, valor: T): ReadonlySet<T> {
   return nuevo;
 }
 
+// categorias: todas las de reportes, también las inactivas (ver
+// prepararCategorias).
 export function ExploradorReportes({
   categorias,
 }: {
   categorias: Categoria[];
 }) {
   const supabase = useMemo(() => createClient(), []);
+  const { porId: categoriasPorId, filtrables } = useMemo(
+    () => prepararCategorias(categorias),
+    [categorias],
+  );
+  // Con todas las filtrables marcadas no se filtra por categoría: así
+  // también se ven los reportes de categorías inactivas.
   const idsCategorias = useMemo(
-    () => categorias.map((categoria) => categoria.id),
-    [categorias],
+    () => filtrables.map((categoria) => categoria.id),
+    [filtrables],
   );
-  const categoriasPorId = useMemo(
-    () => new Map(categorias.map((categoria) => [categoria.id, categoria])),
-    [categorias],
-  );
-  const colorPorCategoria = useMemo(
+  const codigoPorCategoria = useMemo(
     () =>
       new Map(
-        categorias.map((categoria) => [
-          categoria.id,
-          colorDeCategoria(categoria.codigo),
-        ]),
+        [...categoriasPorId.values()].map((c) => [c.id, c.codigo] as const),
       ),
-    [categorias],
+    [categoriasPorId],
   );
 
   const [zona, setZona] = useState(ZONA_INICIAL);
@@ -242,8 +243,7 @@ export function ExploradorReportes({
             </summary>
             <div className="pt-3">
               <FiltrosReportes
-                categorias={categorias}
-                colorPorCategoria={colorPorCategoria}
+                categorias={filtrables}
                 categoriasMarcadas={categoriasMarcadas}
                 estadosMarcados={estadosMarcados}
                 onCambiarCategoria={(id) =>
@@ -259,7 +259,6 @@ export function ExploradorReportes({
           <ListaReportes
             reportes={reportes}
             categoriasPorId={categoriasPorId}
-            colorPorCategoria={colorPorCategoria}
             seleccionadoId={seleccionadoId}
             onSeleccionar={seleccionarEnLista}
           />
@@ -272,7 +271,7 @@ export function ExploradorReportes({
       >
         <MapaReportes
           reportes={reportes}
-          colorPorCategoria={colorPorCategoria}
+          codigoPorCategoria={codigoPorCategoria}
           seleccionadoId={seleccionadoId}
           destino={destino}
           onSeleccionar={seleccionarEnMapa}
@@ -282,14 +281,13 @@ export function ExploradorReportes({
           <TarjetaReporte
             key={seleccionado.id}
             reporte={seleccionado}
-            categoria={
+            nombreCategoria={
               categoriasPorId.get(seleccionado.categoria_id)?.nombre ??
               "Sin categoría"
             }
-            color={
-              colorPorCategoria.get(seleccionado.categoria_id) ??
-              COLOR_SIN_CATEGORIA
-            }
+            categoria={categoriaDe(
+              categoriasPorId.get(seleccionado.categoria_id)?.codigo,
+            )}
             onCerrar={cerrarTarjeta}
           />
         )}

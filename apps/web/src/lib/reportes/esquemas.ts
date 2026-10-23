@@ -64,12 +64,16 @@ const coordenada = (nombre: string) =>
       .pipe(z.coerce.number(`La ${nombre} no es válida.`)),
   );
 
+// Si falta la categoría (ninguna opción marcada) o no es válida.
+export const MENSAJE_CATEGORIA =
+  "Elige la categoría que mejor describe el problema. Si ninguna calza, elige «Otros».";
+
 export const esquemaReporte = z
   .object({
     categoria_id: z.coerce
-      .number("Elige una categoría.")
-      .int("Elige una categoría.")
-      .positive("Elige una categoría."),
+      .number(MENSAJE_CATEGORIA)
+      .int(MENSAJE_CATEGORIA)
+      .positive(MENSAJE_CATEGORIA),
     titulo: z.preprocess(
       textoEnLinea,
       z

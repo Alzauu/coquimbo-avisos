@@ -1,5 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
+
 import { describe, expect, it } from "vitest";
+
+import { CATEGORIAS } from "@/lib/reportes/categorias";
 
 // Consulta el proyecto remoto con la clave anon, como cualquier visitante.
 // El cliente va sin tipos a propósito: pide columnas prohibidas tal como
@@ -173,14 +177,21 @@ describe("función reportes_en_zona como anon", () => {
       .from("categorias")
       .select("id")
       .eq("tipo", "reporte")
-      .eq("codigo", "bache")
+      .eq("codigo", "calles")
       .single();
     const { data, error } = await anon.rpc("reportes_en_zona", {
       ...ZONA_LA_SERENA,
       categorias: [categoria?.id],
     });
     expect(error).toBeNull();
-    expect(idsDeSeed(data)).toEqual([idSeed(1), idSeed(9)]);
+    // 1 y 9 eran «bache» (renombrada a Calles); 4 y 13 llegaron desde
+    // Semáforo, que se unió a Calles (20261023230000_categorias_reportes.sql).
+    expect(idsDeSeed(data)).toEqual([
+      idSeed(1),
+      idSeed(4),
+      idSeed(9),
+      idSeed(13),
+    ]);
   });
 
   it("no devuelve nada fuera de la zona", async () => {
@@ -193,6 +204,79 @@ describe("función reportes_en_zona como anon", () => {
     });
     expect(error).toBeNull();
     expect(idsDeSeed(data)).toEqual([]);
+  });
+});
+
+describe("categorías de reportes", () => {
+  it("las activas son las del catálogo de la app, con el mismo nombre", async () => {
+    const { data, error } = await anon
+      .from("categorias")
+      .select("codigo, nombre, activa")
+      .eq("tipo", "reporte");
+    expect(error).toBeNull();
+    const activas = (data ?? [])
+      .filter((categoria) => categoria.activa)
+      .map((categoria) => `${categoria.codigo}: ${categoria.nombre}`)
+      .sort();
+    expect(activas).toEqual(
+      CATEGORIAS.map((c) => `${c.codigo}: ${c.nombre}`).sort(),
+    );
+    // Semáforo se retiró (se unió a Calles), pero no se borró.
+    expect(data?.find((c) => c.codigo === "semaforo")?.activa).toBe(false);
+  });
+
+  it("un reporte de una categoría inactiva sigue en el mapa y en el detalle", async () => {
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceKey) {
+      throw new Error(
+        "Falta SUPABASE_SERVICE_ROLE_KEY en apps/web/.env.test.local.",
+      );
+    }
+    const servicio = createClient(url, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: categorias } = await anon
+      .from("categorias")
+      .select("id, codigo")
+      .eq("tipo", "reporte")
+      .in("codigo", ["calles", "semaforo"]);
+    const id = (codigo: string) =>
+      categorias!.find((c) => c.codigo === codigo)!.id;
+
+    // Se crea en una categoría activa (la base ya no acepta reportes nuevos
+    // en una inactiva) y luego se mueve, como un reporte antiguo.
+    const reporteId = randomUUID();
+    try {
+      const creado = await servicio.from("reportes").insert({
+        id: reporteId,
+        categoria_id: id("calles"),
+        comuna_id: 4101,
+        titulo: "Reporte de prueba en categoría inactiva",
+        ubicacion: "SRID=4326;POINT(-71.25 -29.905)",
+        moderacion: "aprobado",
+      });
+      expect(creado.error).toBeNull();
+      const movido = await servicio
+        .from("reportes")
+        .update({ categoria_id: id("semaforo") })
+        .eq("id", reporteId);
+      expect(movido.error).toBeNull();
+
+      const detalle = await anon
+        .from("v_reportes_publicos")
+        .select("id, categoria_id")
+        .eq("id", reporteId);
+      expect(detalle.data).toEqual([
+        { id: reporteId, categoria_id: id("semaforo") },
+      ]);
+
+      const { data: mapa } = await anon.rpc("reportes_en_zona", ZONA_LA_SERENA);
+      expect(
+        (mapa ?? []).filter((r: { id: string }) => r.id === reporteId),
+      ).toHaveLength(1);
+    } finally {
+      await servicio.from("reportes").delete().eq("id", reporteId);
+    }
   });
 });
 

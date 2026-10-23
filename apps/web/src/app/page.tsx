@@ -11,12 +11,14 @@ export default async function Home() {
     supabase.auth.getClaims(),
     supabase
       .from("categorias")
-      .select("id, codigo, nombre")
+      // También las inactivas: un reporte antiguo puede tener una y debe
+      // seguir mostrando su nombre. Los filtros solo ofrecen las activas.
+      .select("id, codigo, nombre, activa")
       .eq("tipo", "reporte")
-      .eq("activa", true)
       .order("id"),
   ]);
-  // Sin categorías el mapa sigue funcionando, sin colores ni filtro por categoría.
+  // Sin categorías el mapa sigue funcionando, con la ficha de Otros y sin
+  // filtro por categoría.
   if (error) console.error("categorias", error.code);
   // Los enlaces son solo una comodidad: /moderacion y /admin verifican el
   // rol por su cuenta.

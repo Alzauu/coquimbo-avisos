@@ -1,3 +1,4 @@
+import { imagenDeCategoria, ordenDeCategoria } from "@/lib/reportes/categorias";
 import type { Database } from "@/lib/supabase/database.types";
 
 type FilaZona =
@@ -16,7 +17,27 @@ export type ReportePublico = Omit<
   resuelto_en: string | null;
 };
 
-export type Categoria = { id: number; codigo: string; nombre: string };
+export type Categoria = {
+  id: number;
+  codigo: string;
+  nombre: string;
+  activa: boolean;
+};
+
+// Categorías de reportes en el orden del catálogo (lib/reportes/categorias.ts).
+// porId incluye las inactivas: un reporte antiguo puede tener una (por
+// ejemplo, Semáforo) y debe seguir mostrando su nombre. filtrables, solo las
+// activas: son las que se ofrecen en filtros y formularios.
+export function prepararCategorias(filas: readonly Categoria[]) {
+  const ordenadas = [...filas].sort(
+    (a, b) =>
+      ordenDeCategoria(a.codigo) - ordenDeCategoria(b.codigo) || a.id - b.id,
+  );
+  return {
+    porId: new Map(ordenadas.map((categoria) => [categoria.id, categoria])),
+    filtrables: ordenadas.filter((categoria) => categoria.activa),
+  };
+}
 
 // Estados que puede tener un reporte público: los rechazados nunca se muestran.
 export const ESTADOS_PUBLICOS = [
@@ -53,25 +74,6 @@ export const EXPLICACION_MODERACION: Record<EstadoModeracion, string> = {
   rechazado: "Moderación lo revisó y decidió no publicarlo.",
   archivado: "Administración lo archivó: ya no se muestra en el mapa público.",
 };
-
-// Colores distinguibles entre sí y con buen contraste sobre el mapa. El
-// color nunca es la única pista: la lista y los filtros muestran el nombre.
-const COLOR_POR_CODIGO: Record<string, string> = {
-  bache: "#c2410c",
-  luminaria: "#b45309",
-  basura: "#7c4a2d",
-  semaforo: "#be185d",
-  agua_alcantarillado: "#1d4ed8",
-  area_verde: "#15803d",
-  vehiculo_abandonado: "#6d28d9",
-  otro: "#475569",
-};
-
-export const COLOR_SIN_CATEGORIA = "#475569";
-
-export function colorDeCategoria(codigo: string): string {
-  return COLOR_POR_CODIGO[codigo] ?? COLOR_SIN_CATEGORIA;
-}
 
 export type Zona = { oeste: number; sur: number; este: number; norte: number };
 
@@ -116,13 +118,14 @@ export type ColeccionReportes = {
   features: {
     type: "Feature";
     geometry: { type: "Point"; coordinates: [number, number] };
-    properties: { id: string; color: string };
+    // Imagen de la ficha de su categoría (capa de símbolos del mapa).
+    properties: { id: string; icono: string };
   }[];
 };
 
 export function aGeoJSON(
   reportes: readonly ReportePublico[],
-  colorPorCategoria: ReadonlyMap<number, string>,
+  codigoPorCategoria: ReadonlyMap<number, string>,
 ): ColeccionReportes {
   return {
     type: "FeatureCollection",
@@ -134,8 +137,7 @@ export function aGeoJSON(
       },
       properties: {
         id: reporte.id,
-        color:
-          colorPorCategoria.get(reporte.categoria_id) ?? COLOR_SIN_CATEGORIA,
+        icono: imagenDeCategoria(codigoPorCategoria.get(reporte.categoria_id)),
       },
     })),
   };

@@ -9,6 +9,7 @@ import {
   LARGO_REFERENCIA_MAX,
   LARGO_TITULO,
   MAX_BYTES_FOTO_ENVIADA,
+  MENSAJE_CATEGORIA,
   RECTANGULO_LA_SERENA,
 } from "./esquemas";
 
@@ -126,7 +127,7 @@ describe("esquemaReporte", () => {
     "pide elegir una categoría si llega %s",
     (categoria) => {
       expect(errores({ ...valido, categoria_id: categoria })).toEqual({
-        categoria_id: "Elige una categoría.",
+        categoria_id: MENSAJE_CATEGORIA,
       });
     },
   );

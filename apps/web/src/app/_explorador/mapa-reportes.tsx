@@ -8,6 +8,7 @@ import {
 } from "maplibre-gl";
 import { useEffect, useRef } from "react";
 
+import { registrarFichas } from "@/components/mapa/fichas-mapa";
 import { MarcoMapa, useMapa } from "@/components/mapa/mapa-base";
 import {
   aGeoJSON,
@@ -176,7 +177,9 @@ function contenidoPopupCorte(propiedades: Record<string, unknown>) {
 
 type Props = {
   reportes: readonly ReportePublico[];
-  colorPorCategoria: ReadonlyMap<number, string>;
+  // Código de cada categoría (para la ficha); un código desconocido usa la
+  // de Otros.
+  codigoPorCategoria: ReadonlyMap<number, string>;
   seleccionadoId: string | null;
   // Cada objeto nuevo mueve el mapa a ese punto (al elegir en la lista).
   destino: { lng: number; lat: number } | null;
@@ -186,7 +189,7 @@ type Props = {
 
 export default function MapaReportes({
   reportes,
-  colorPorCategoria,
+  codigoPorCategoria,
   seleccionadoId,
   destino,
   onSeleccionar,
@@ -273,16 +276,19 @@ export default function MapaReportes({
       },
       paint: { "text-color": "#ffffff" },
     });
+    // Cada reporte se dibuja con la ficha de su categoría (ícono y color),
+    // registrada como imagen. Se permite que se superpongan, como los
+    // círculos de antes: ninguna ficha se oculta por choque con otra.
+    registrarFichas(mapa);
     mapa.addLayer({
       id: CAPA_PUNTOS,
-      type: "circle",
+      type: "symbol",
       source: FUENTE,
       filter: ["!", ["has", "point_count"]],
-      paint: {
-        "circle-color": ["get", "color"],
-        "circle-radius": 9,
-        "circle-stroke-color": "#ffffff",
-        "circle-stroke-width": 2,
+      layout: {
+        "icon-image": ["get", "icono"],
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
       },
     });
     mapa.addLayer({
@@ -292,7 +298,8 @@ export default function MapaReportes({
       filter: ["==", ["get", "id"], ""],
       paint: {
         "circle-color": "transparent",
-        "circle-radius": 14,
+        // Rodea la ficha de 28 px.
+        "circle-radius": 18,
         "circle-stroke-color": "#111827",
         "circle-stroke-width": 3,
       },
@@ -376,8 +383,8 @@ export default function MapaReportes({
   useEffect(() => {
     mapa
       ?.getSource<GeoJSONSource>(FUENTE)
-      ?.setData(aGeoJSON(reportes, colorPorCategoria));
-  }, [mapa, reportes, colorPorCategoria]);
+      ?.setData(aGeoJSON(reportes, codigoPorCategoria));
+  }, [mapa, reportes, codigoPorCategoria]);
 
   // Cortes de luz: se consultan al cargar el mapa y cada minuto, salvo con
   // la pestaña oculta (al volver se consulta de inmediato). Si una consulta

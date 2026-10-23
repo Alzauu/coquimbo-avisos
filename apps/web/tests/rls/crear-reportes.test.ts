@@ -134,7 +134,7 @@ beforeAll(async () => {
     .from("categorias")
     .select("id")
     .eq("tipo", "reporte")
-    .eq("codigo", "bache")
+    .eq("codigo", "calles")
     .single();
   categoriaId = data!.id;
   [a, b, c] = await Promise.all([
@@ -196,6 +196,30 @@ describe("crear reportes", () => {
       .from("reportes")
       .insert(nuevoReporte({ comuna_id: COQUIMBO_INACTIVA }));
     expect(error?.code).toBe(PERMISO_DENEGADO);
+  });
+
+  it("la base rechaza una categoría inactiva o de obras, también con service_role", async () => {
+    const { data: categorias } = await anon
+      .from("categorias")
+      .select("id, tipo, codigo, activa");
+    const semaforo = categorias!.find(
+      (cat) => cat.tipo === "reporte" && cat.codigo === "semaforo",
+    )!;
+    const obra = categorias!.find((cat) => cat.tipo === "obra")!;
+    expect(semaforo.activa).toBe(false);
+
+    for (const categoria_id of [semaforo.id, obra.id]) {
+      const { error } = await a.cliente
+        .from("reportes")
+        .insert(nuevoReporte({ categoria_id }));
+      expect(error?.hint, String(categoria_id)).toBe("categoria_invalida");
+    }
+    // La regla no depende de quién inserta.
+    const deServicio = await admin.from("reportes").insert({
+      ...nuevoReporte({ categoria_id: semaforo.id }),
+      usuario_id: a.id,
+    });
+    expect(deServicio.error?.hint).toBe("categoria_invalida");
   });
 
   it("la base rechaza un título demasiado corto", async () => {

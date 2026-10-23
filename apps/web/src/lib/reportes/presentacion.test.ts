@@ -2,10 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   aGeoJSON,
-  COLOR_SIN_CATEGORIA,
-  colorDeCategoria,
   filtroDeSeleccion,
   formatearFecha,
+  prepararCategorias,
   recortarTexto,
   type ReportePublico,
   zonaValida,
@@ -57,24 +56,49 @@ describe("zonaValida", () => {
 });
 
 describe("aGeoJSON", () => {
-  it("usa [longitud, latitud] y el color de la categoría", () => {
-    const geojson = aGeoJSON([reporte], new Map([[3, "#123456"]]));
+  it("usa [longitud, latitud] y la ficha de la categoría", () => {
+    const geojson = aGeoJSON([reporte], new Map([[3, "basura"]]));
     expect(geojson.features[0]).toEqual({
       type: "Feature",
       geometry: { type: "Point", coordinates: [-71.25, -29.9] },
-      properties: { id: "r1", color: "#123456" },
+      properties: { id: "r1", icono: "categoria-basura" },
     });
   });
 
-  it("usa un color neutro si la categoría no tiene color", () => {
-    const geojson = aGeoJSON([reporte], new Map());
-    expect(geojson.features[0]?.properties.color).toBe(COLOR_SIN_CATEGORIA);
+  it("usa la ficha de Otros si la categoría es desconocida", () => {
+    for (const codigos of [new Map(), new Map([[3, "semaforo"]])]) {
+      const geojson = aGeoJSON([reporte], codigos);
+      expect(geojson.features[0]?.properties.icono).toBe("categoria-otros");
+    }
   });
 });
 
-describe("colorDeCategoria", () => {
-  it("usa el color neutro para un código desconocido", () => {
-    expect(colorDeCategoria("no-existe")).toBe(COLOR_SIN_CATEGORIA);
+describe("prepararCategorias", () => {
+  const filas = [
+    { id: 8, codigo: "otros", nombre: "Otros", activa: true },
+    {
+      id: 4,
+      codigo: "semaforo",
+      nombre: "Semáforo o señalética",
+      activa: false,
+    },
+    { id: 16, codigo: "veredas", nombre: "Veredas", activa: true },
+    { id: 1, codigo: "calles", nombre: "Calles", activa: true },
+  ];
+
+  it("conserva las inactivas para mostrar su nombre", () => {
+    const { porId } = prepararCategorias(filas);
+    // Un reporte antiguo de Semáforo no queda como «Sin categoría».
+    expect(porId.get(4)?.nombre).toBe("Semáforo o señalética");
+  });
+
+  it("solo ofrece las activas, en el orden del catálogo", () => {
+    const { filtrables } = prepararCategorias(filas);
+    expect(filtrables.map((c) => c.codigo)).toEqual([
+      "calles",
+      "veredas",
+      "otros",
+    ]);
   });
 });
 

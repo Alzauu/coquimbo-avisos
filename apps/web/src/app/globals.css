@@ -39,3 +39,16 @@ body {
   color: var(--foreground);
   font-family: system-ui, sans-serif;
 }
+
+/* Controles nativos (listas de <select>, casillas, barras de desplazamiento)
+   en el tema del sistema: sin esto, en modo oscuro las opciones de un
+   <select> se dibujan claras con texto claro. */
+:root {
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}

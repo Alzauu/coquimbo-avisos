@@ -10,6 +10,7 @@ import {
   POR_PAGINA,
   TODAS_LAS_MODERACIONES,
 } from "@/lib/admin/filtros";
+import { ordenDeCategoria } from "@/lib/reportes/categorias";
 import {
   ESTADOS_PUBLICOS,
   formatearFecha,
@@ -44,10 +45,14 @@ export default async function AdminReportesPage({
     // También las desactivadas: un reporte antiguo puede tener una.
     supabase
       .from("categorias")
-      .select("id, nombre, activa")
+      .select("id, codigo, nombre, activa")
       .eq("tipo", "reporte")
       .order("id"),
   ]);
+  // En el orden del catálogo, como en el resto de la app.
+  categorias?.sort(
+    (a, b) => ordenDeCategoria(a.codigo) - ordenDeCategoria(b.codigo),
+  );
   if (error) console.error("listar_reportes_admin", error.code);
   const nombreCategoria = new Map(
     (categorias ?? []).map((categoria) => [categoria.id, categoria.nombre]),

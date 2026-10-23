@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import {
   COMUNA_LA_SERENA,
   erroresDeValidacion,
+  MENSAJE_CATEGORIA,
   type ErroresReporte,
   esquemaFotos,
   esquemaReporte,
@@ -64,7 +65,8 @@ export async function crearReporte(
   }
   const reporte = campos.data;
 
-  // La llave foránea aceptaría también una categoría de obras.
+  // Una categoría de reportes y activa. La base también lo exige
+  // (validar_nuevo_reporte); revisarlo aquí da un error en el campo.
   const { data: categoria } = await supabase
     .from("categorias")
     .select("id")
@@ -74,7 +76,7 @@ export async function crearReporte(
     .maybeSingle();
   if (!categoria) {
     return fallo("Revisa los campos marcados.", {
-      categoria_id: "Elige una categoría de la lista.",
+      categoria_id: MENSAJE_CATEGORIA,
     });
   }
 
@@ -143,6 +145,10 @@ function traducirError(error: PostgrestError): EstadoFormulario {
       return fallo(
         "Alcanzaste el máximo de 5 reportes por hora. Inténtalo de nuevo más tarde.",
       );
+    case "categoria_invalida":
+      return fallo("Revisa los campos marcados.", {
+        categoria_id: MENSAJE_CATEGORIA,
+      });
     case "fuera_de_comuna":
       return fallo("Revisa los campos marcados.", {
         ubicacion:

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { ordenDeCategoria } from "@/lib/reportes/categorias";
 import { createClient } from "@/lib/supabase/server";
 
 import { FormularioReporte } from "./formulario-reporte";
@@ -20,11 +21,15 @@ export default async function ReportarPage() {
 
   const { data: categorias, error } = await supabase
     .from("categorias")
-    .select("id, nombre")
+    .select("id, codigo, nombre")
     .eq("tipo", "reporte")
     .eq("activa", true)
     .order("id");
   if (error) console.error("categorias", error.code);
+  // En el orden del catálogo (Calles primero, Otros al final).
+  categorias?.sort(
+    (a, b) => ordenDeCategoria(a.codigo) - ordenDeCategoria(b.codigo),
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8">

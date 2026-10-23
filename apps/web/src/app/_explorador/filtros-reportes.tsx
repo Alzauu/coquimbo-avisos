@@ -1,3 +1,5 @@
+import { FichaCategoria } from "@/components/categorias/ficha-categoria";
+import { categoriaDe } from "@/lib/reportes/categorias";
 import {
   type Categoria,
   type EstadoPublico,
@@ -6,18 +8,18 @@ import {
 } from "@/lib/reportes/presentacion";
 
 type Props = {
+  // Solo las activas, en el orden del catálogo.
   categorias: readonly Categoria[];
-  colorPorCategoria: ReadonlyMap<number, string>;
   categoriasMarcadas: ReadonlySet<number>;
   estadosMarcados: ReadonlySet<EstadoPublico>;
   onCambiarCategoria: (id: number) => void;
   onCambiarEstado: (estado: EstadoPublico) => void;
 };
 
-// Las casillas de categoría también sirven de leyenda de colores del mapa.
+// Las casillas de categoría también sirven de leyenda de las fichas del
+// mapa (ícono y color).
 export function FiltrosReportes({
   categorias,
-  colorPorCategoria,
   categoriasMarcadas,
   estadosMarcados,
   onCambiarCategoria,
@@ -38,10 +40,9 @@ export function FiltrosReportes({
               onChange={() => onCambiarCategoria(categoria.id)}
               className="size-4"
             />
-            <span
-              aria-hidden="true"
-              className="size-3.5 shrink-0 rounded-full border-2 border-white shadow-[0_0_0_1px_rgb(0_0_0/0.3)]"
-              style={{ backgroundColor: colorPorCategoria.get(categoria.id) }}
+            <FichaCategoria
+              categoria={categoriaDe(categoria.codigo)}
+              tamano={24}
             />
             {categoria.nombre}
           </label>

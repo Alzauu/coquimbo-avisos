@@ -261,7 +261,7 @@ beforeAll(async () => {
     .eq("activa", true)
     .order("id");
   const deReporte = (categorias ?? []).filter((c) => c.tipo === "reporte");
-  categoriaId = deReporte.find((c) => c.codigo === "bache")!.id;
+  categoriaId = deReporte.find((c) => c.codigo === "calles")!.id;
   otraCategoriaId = deReporte.find((c) => c.id !== categoriaId)!.id;
   categoriaObraId = (categorias ?? []).find((c) => c.tipo === "obra")!.id;
 

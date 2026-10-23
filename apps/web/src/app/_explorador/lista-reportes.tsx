@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 
+import { FichaCategoria } from "@/components/categorias/ficha-categoria";
+import { categoriaDe } from "@/lib/reportes/categorias";
 import {
   type Categoria,
-  COLOR_SIN_CATEGORIA,
   NOMBRE_ESTADO,
   type ReportePublico,
 } from "@/lib/reportes/presentacion";
@@ -12,7 +13,6 @@ import { ID_TARJETA } from "./tarjeta-reporte";
 type Props = {
   reportes: readonly ReportePublico[];
   categoriasPorId: ReadonlyMap<number, Categoria>;
-  colorPorCategoria: ReadonlyMap<number, string>;
   seleccionadoId: string | null;
   onSeleccionar: (reporte: ReportePublico) => void;
 };
@@ -23,7 +23,6 @@ type Props = {
 export function ListaReportes({
   reportes,
   categoriasPorId,
-  colorPorCategoria,
   seleccionadoId,
   onSeleccionar,
 }: Props) {
@@ -56,14 +55,9 @@ export function ListaReportes({
               onClick={() => onSeleccionar(reporte)}
               className="flex w-full items-start gap-3 rounded-md p-3 text-left"
             >
-              <span
-                aria-hidden="true"
-                className="mt-1 size-3.5 shrink-0 rounded-full"
-                style={{
-                  backgroundColor:
-                    colorPorCategoria.get(reporte.categoria_id) ??
-                    COLOR_SIN_CATEGORIA,
-                }}
+              <FichaCategoria
+                categoria={categoriaDe(categoria?.codigo)}
+                tamano={24}
               />
               <span className="flex flex-col gap-0.5">
                 <span className="font-medium">{reporte.titulo}</span>

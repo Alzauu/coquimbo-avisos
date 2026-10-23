@@ -7,11 +7,13 @@ import {
   useState,
 } from "react";
 
+import { FichaCategoria } from "@/components/categorias/ficha-categoria";
 import {
   DURACION_URL_FOTO,
   esquemaFotosReporte,
   type FotoReporte,
 } from "@/lib/fotos/respuesta";
+import type { CategoriaVisual } from "@/lib/reportes/categorias";
 import {
   formatearFecha,
   NOMBRE_ESTADO,
@@ -40,15 +42,20 @@ type Carga =
 
 type Props = {
   reporte: ReportePublico;
-  categoria: string;
-  color: string;
+  nombreCategoria: string;
+  categoria: CategoriaVisual;
   onCerrar: () => void;
 };
 
 // Resumen de un reporte elegido en el mapa o en la lista. Diálogo no
 // modal: el mapa y la lista siguen disponibles. Se monta de nuevo para
 // cada reporte (key), así que su estado parte de cero.
-export function TarjetaReporte({ reporte, categoria, color, onCerrar }: Props) {
+export function TarjetaReporte({
+  reporte,
+  nombreCategoria,
+  categoria,
+  onCerrar,
+}: Props) {
   const titulo = useRef<HTMLHeadingElement>(null);
   const [descripcionCompleta, setDescripcionCompleta] = useState(false);
 
@@ -94,13 +101,9 @@ export function TarjetaReporte({ reporte, categoria, color, onCerrar }: Props) {
       </div>
 
       <p className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-        <span
-          aria-hidden="true"
-          className="size-3 shrink-0 rounded-full"
-          style={{ backgroundColor: color }}
-        />
+        <FichaCategoria categoria={categoria} tamano={24} />
         <span>
-          {categoria} · Estado: {NOMBRE_ESTADO[reporte.estado]}
+          {nombreCategoria} · Estado: {NOMBRE_ESTADO[reporte.estado]}
         </span>
       </p>
 

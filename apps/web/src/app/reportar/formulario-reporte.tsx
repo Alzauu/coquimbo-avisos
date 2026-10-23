@@ -10,6 +10,8 @@ import {
   useState,
 } from "react";
 
+import { FichaCategoria } from "@/components/categorias/ficha-categoria";
+import { categoriaDe } from "@/lib/reportes/categorias";
 import {
   type CampoReporte,
   erroresDeValidacion,
@@ -63,7 +65,7 @@ const ERRORES_UBICACION: Record<number, string> = {
   3: "Tu ubicación tardó demasiado en llegar. Inténtalo otra vez o mueve el mapa a mano.",
 };
 
-type Categoria = { id: number; nombre: string };
+type Categoria = { id: number; codigo: string; nombre: string };
 type Problema = { mensaje: string; errores: ErroresReporte };
 
 const formatoCoordenada = new Intl.NumberFormat("es-CL", {
@@ -250,28 +252,41 @@ export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
           Detalle
         </h2>
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor="categoria_id" className="font-medium">
-            Categoría
-          </label>
-          <select
-            id="categoria_id"
-            name="categoria_id"
-            value={valores.categoria_id}
-            onChange={(e) => cambiar("categoria_id", e.target.value)}
-            aria-invalid={Boolean(errores.categoria_id)}
-            aria-describedby={describir("categoria_id")}
-            className="rounded-md border border-zinc-400 bg-transparent px-3 py-2 dark:border-zinc-600"
-          >
-            <option value="">Elige una categoría</option>
+        {/* Opciones con su ficha (un <option> no puede mostrar íconos).
+            Ninguna marcada al empezar: la persona elige. La ficha es
+            decorativa; el nombre es la etiqueta de cada opción. */}
+        <fieldset
+          id="categoria_id"
+          aria-describedby={describir("categoria_id")}
+          className="flex flex-col gap-2"
+        >
+          <legend className="mb-1 font-medium">Categoría</legend>
+          <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:grid-cols-4">
             {categorias.map((categoria) => (
-              <option key={categoria.id} value={categoria.id}>
-                {categoria.nombre}
-              </option>
+              <label
+                key={categoria.id}
+                className="flex min-h-12 cursor-pointer items-center gap-2 rounded-md border border-zinc-300 px-3 py-2 has-[:checked]:border-zinc-900 has-[:checked]:bg-zinc-100 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 dark:border-zinc-700 dark:has-[:checked]:border-zinc-100 dark:has-[:checked]:bg-zinc-800"
+              >
+                <input
+                  type="radio"
+                  name="categoria_id"
+                  value={categoria.id}
+                  checked={valores.categoria_id === String(categoria.id)}
+                  onChange={(e) => cambiar("categoria_id", e.target.value)}
+                  className="size-4 shrink-0"
+                />
+                <FichaCategoria
+                  categoria={categoriaDe(categoria.codigo)}
+                  tamano={28}
+                />
+                <span className="text-sm leading-tight">
+                  {categoria.nombre}
+                </span>
+              </label>
             ))}
-          </select>
+          </div>
           <ErrorCampo campo="categoria_id" errores={errores} />
-        </div>
+        </fieldset>
 
         <CampoTexto
           campo="titulo"

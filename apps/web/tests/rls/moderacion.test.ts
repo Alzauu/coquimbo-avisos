@@ -174,7 +174,7 @@ beforeAll(async () => {
     .from("categorias")
     .select("id")
     .eq("tipo", "reporte")
-    .eq("codigo", "bache")
+    .eq("codigo", "calles")
     .single();
   categoriaId = data!.id;
   [autor, otro, moderador] = await Promise.all([
