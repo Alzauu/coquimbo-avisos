@@ -468,23 +468,26 @@ export type Database = {
         Row: {
           creado_en: string;
           id: number;
+          oculta: boolean;
           orden: number;
           reporte_id: string;
-          url: string;
+          ruta: string;
         };
         Insert: {
           creado_en?: string;
           id?: number;
+          oculta?: boolean;
           orden?: number;
           reporte_id: string;
-          url: string;
+          ruta: string;
         };
         Update: {
           creado_en?: string;
           id?: number;
+          oculta?: boolean;
           orden?: number;
           reporte_id?: string;
-          url?: string;
+          ruta?: string;
         };
         Relationships: [
           {
@@ -836,6 +839,28 @@ export type Database = {
       };
     };
     Functions: {
+      es_mi_reporte_pendiente: { Args: { reporte: string }; Returns: boolean };
+      mis_reportes: {
+        Args: never;
+        Returns: {
+          categoria_id: number;
+          creado_en: string;
+          descripcion: string;
+          direccion_referencia: string;
+          estado: Database["public"]["Enums"]["estado_reporte"];
+          fotos: string[];
+          id: string;
+          latitud: number;
+          longitud: number;
+          moderacion: Database["public"]["Enums"]["estado_moderacion"];
+          titulo: string;
+        }[];
+      };
+      puede_registrar_foto: {
+        Args: { reporte: string; ruta: string };
+        Returns: boolean;
+      };
+      puede_subir_foto_reporte: { Args: { nombre: string }; Returns: boolean };
       reportes_en_zona: {
         Args: {
           categorias?: number[];
