@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { esModerador } from "@/lib/auth/rol";
+import { esAdmin, esModerador } from "@/lib/auth/rol";
 import { createClient } from "@/lib/supabase/server";
 
 import { ExploradorReportes } from "./_explorador/explorador-reportes";
@@ -18,8 +18,11 @@ export default async function Home() {
   ]);
   // Sin categorías el mapa sigue funcionando, sin colores ni filtro por categoría.
   if (error) console.error("categorias", error.code);
-  // El enlace es solo una comodidad: /moderacion verifica el rol por su cuenta.
-  const modera = sesion?.claims ? await esModerador(supabase) : false;
+  // Los enlaces son solo una comodidad: /moderacion y /admin verifican el
+  // rol por su cuenta.
+  const [modera, administra] = sesion?.claims
+    ? await Promise.all([esModerador(supabase), esAdmin(supabase)])
+    : [false, false];
 
   return (
     <div className="flex h-dvh flex-col">
@@ -52,6 +55,13 @@ export default async function Home() {
               <li>
                 <Link href="/moderacion" className="underline">
                   Moderación
+                </Link>
+              </li>
+            )}
+            {administra && (
+              <li>
+                <Link href="/admin/reportes" className="underline">
+                  Administración
                 </Link>
               </li>
             )}

@@ -6,6 +6,7 @@ import {
   colorDeCategoria,
   filtroDeSeleccion,
   formatearFecha,
+  recortarTexto,
   type ReportePublico,
   zonaValida,
 } from "./presentacion";
@@ -83,5 +84,26 @@ describe("formatearFecha", () => {
     expect(formatearFecha("2026-10-21T02:00:00Z")).toBe(
       "20 de octubre de 2026",
     );
+  });
+});
+
+describe("recortarTexto", () => {
+  it("no recorta un texto corto", () => {
+    expect(recortarTexto("Hay un bache.", 20)).toBeNull();
+    expect(recortarTexto("x".repeat(20), 20)).toBeNull();
+  });
+
+  it("corta en el último espacio y agrega puntos suspensivos", () => {
+    expect(recortarTexto("Hay un bache grande frente al colegio", 20)).toBe(
+      "Hay un bache grande…",
+    );
+  });
+
+  it("corta en seco si no hay un espacio razonable", () => {
+    expect(recortarTexto("a".repeat(30), 10)).toBe(`${"a".repeat(10)}…`);
+  });
+
+  it("no parte emojis", () => {
+    expect(recortarTexto("🚧".repeat(12), 10)).toBe(`${"🚧".repeat(10)}…`);
   });
 });

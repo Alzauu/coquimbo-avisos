@@ -15,3 +15,15 @@ export async function esModerador(
   }
   return data === true;
 }
+
+// ¿La sesión actual es de un admin? Igual que esModerador, con es_admin.
+export async function esAdmin(
+  supabase: SupabaseClient<Database>,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc("es_admin");
+  if (error) {
+    console.error("es_admin", error.code);
+    return false;
+  }
+  return data === true;
+}

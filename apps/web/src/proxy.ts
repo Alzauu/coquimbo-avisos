@@ -11,6 +11,7 @@ const RUTAS_PROTEGIDAS = [
   "/reportar",
   "/mis-reportes",
   "/moderacion",
+  "/admin",
 ];
 
 function esRutaProtegida(ruta: string) {

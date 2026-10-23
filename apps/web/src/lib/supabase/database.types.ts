@@ -510,6 +510,7 @@ export type Database = {
         Row: {
           accion: Database["public"]["Enums"]["accion_historial"];
           cambiado_por: string | null;
+          cambios: Json | null;
           creado_en: string;
           estado_anterior: Database["public"]["Enums"]["estado_reporte"] | null;
           estado_nuevo: Database["public"]["Enums"]["estado_reporte"];
@@ -523,6 +524,7 @@ export type Database = {
         Insert: {
           accion: Database["public"]["Enums"]["accion_historial"];
           cambiado_por?: string | null;
+          cambios?: Json | null;
           creado_en?: string;
           estado_anterior?:
             Database["public"]["Enums"]["estado_reporte"] | null;
@@ -537,6 +539,7 @@ export type Database = {
         Update: {
           accion?: Database["public"]["Enums"]["accion_historial"];
           cambiado_por?: string | null;
+          cambios?: Json | null;
           creado_en?: string;
           estado_anterior?:
             Database["public"]["Enums"]["estado_reporte"] | null;
@@ -656,6 +659,65 @@ export type Database = {
           {
             foreignKeyName: "reportes_usuario_id_fkey";
             columns: ["usuario_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      reportes_eliminados: {
+        Row: {
+          archivos: number;
+          categoria_id: number;
+          comuna_id: number;
+          eliminado_en: string;
+          eliminado_por: string | null;
+          estado: Database["public"]["Enums"]["estado_reporte"];
+          filas_historial: number;
+          fotos: number;
+          id: number;
+          moderacion: Database["public"]["Enums"]["estado_moderacion"];
+          motivo: string;
+          reporte_actualizado_en: string;
+          reporte_creado_en: string;
+          reporte_id: string;
+        };
+        Insert: {
+          archivos: number;
+          categoria_id: number;
+          comuna_id: number;
+          eliminado_en?: string;
+          eliminado_por?: string | null;
+          estado: Database["public"]["Enums"]["estado_reporte"];
+          filas_historial: number;
+          fotos: number;
+          id?: number;
+          moderacion: Database["public"]["Enums"]["estado_moderacion"];
+          motivo: string;
+          reporte_actualizado_en: string;
+          reporte_creado_en: string;
+          reporte_id: string;
+        };
+        Update: {
+          archivos?: number;
+          categoria_id?: number;
+          comuna_id?: number;
+          eliminado_en?: string;
+          eliminado_por?: string | null;
+          estado?: Database["public"]["Enums"]["estado_reporte"];
+          filas_historial?: number;
+          fotos?: number;
+          id?: number;
+          moderacion?: Database["public"]["Enums"]["estado_moderacion"];
+          motivo?: string;
+          reporte_actualizado_en?: string;
+          reporte_creado_en?: string;
+          reporte_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reportes_eliminados_eliminado_por_fkey";
+            columns: ["eliminado_por"];
             isOneToOne: false;
             referencedRelation: "perfiles";
             referencedColumns: ["id"];
@@ -858,7 +920,12 @@ export type Database = {
       };
     };
     Functions: {
+      admin_puede_borrar_archivo: {
+        Args: { nombre: string };
+        Returns: boolean;
+      };
       aprobar_reporte: { Args: { reporte: string }; Returns: undefined };
+      archivar_reporte: { Args: { reporte: string }; Returns: undefined };
       cambiar_estado_reporte: {
         Args: {
           nuevo: Database["public"]["Enums"]["estado_reporte"];
@@ -866,9 +933,50 @@ export type Database = {
         };
         Returns: undefined;
       };
+      editar_reporte: {
+        Args: {
+          nueva_categoria: number;
+          nueva_descripcion: string;
+          nueva_latitud: number;
+          nueva_longitud: number;
+          nueva_referencia: string;
+          nuevo_estado: Database["public"]["Enums"]["estado_reporte"];
+          nuevo_titulo: string;
+          reporte: string;
+          version: string;
+        };
+        Returns: undefined;
+      };
+      eliminar_reporte: {
+        Args: { motivo: string; reporte: string };
+        Returns: string[];
+      };
+      es_admin: { Args: never; Returns: boolean };
       es_mi_reporte_pendiente: { Args: { reporte: string }; Returns: boolean };
       es_moderador: { Args: never; Returns: boolean };
+      exigir_admin: { Args: never; Returns: undefined };
       exigir_moderador: { Args: never; Returns: undefined };
+      listar_reportes_admin: {
+        Args: {
+          busqueda?: string;
+          categoria?: number;
+          estados?: Database["public"]["Enums"]["estado_reporte"][];
+          moderaciones?: Database["public"]["Enums"]["estado_moderacion"][];
+          pagina?: number;
+        };
+        Returns: {
+          actualizado_en: string;
+          categoria_id: number;
+          creado_en: string;
+          direccion_referencia: string;
+          estado: Database["public"]["Enums"]["estado_reporte"];
+          fotos: number;
+          id: string;
+          moderacion: Database["public"]["Enums"]["estado_moderacion"];
+          titulo: string;
+          total: number;
+        }[];
+      };
       mis_reportes: {
         Args: never;
         Returns: {
@@ -895,6 +1003,23 @@ export type Database = {
           reporte: string;
         };
         Returns: undefined;
+      };
+      obtener_reporte_admin: {
+        Args: { reporte: string };
+        Returns: {
+          actualizado_en: string;
+          categoria_id: number;
+          creado_en: string;
+          descripcion: string;
+          direccion_referencia: string;
+          estado: Database["public"]["Enums"]["estado_reporte"];
+          fotos: number;
+          id: string;
+          latitud: number;
+          longitud: number;
+          moderacion: Database["public"]["Enums"]["estado_moderacion"];
+          titulo: string;
+        }[];
       };
       ocultar_foto: { Args: { foto: number }; Returns: undefined };
       ocultar_reporte: {
@@ -946,7 +1071,12 @@ export type Database = {
           titulo: string;
         }[];
       };
+      restaurar_reporte: { Args: { reporte: string }; Returns: undefined };
       ruta_foto_publica: { Args: { foto: number }; Returns: string };
+      ubicacion_en_comuna: {
+        Args: { comuna: number; punto: unknown };
+        Returns: boolean;
+      };
       validar_nota_moderacion: {
         Args: { nota: string; obligatoria: boolean };
         Returns: string;
@@ -958,8 +1088,12 @@ export type Database = {
         | "rechazar"
         | "ocultar_reporte"
         | "ocultar_foto"
-        | "cambiar_estado";
-      estado_moderacion: "pendiente" | "aprobado" | "oculto" | "rechazado";
+        | "cambiar_estado"
+        | "editar"
+        | "archivar"
+        | "restaurar";
+      estado_moderacion:
+        "pendiente" | "aprobado" | "oculto" | "rechazado" | "archivado";
       estado_obra: "programada" | "en_curso" | "finalizada" | "cancelada";
       estado_reporte:
         "recibido" | "en_revision" | "derivado" | "resuelto" | "rechazado";
@@ -1112,8 +1246,17 @@ export const Constants = {
         "ocultar_reporte",
         "ocultar_foto",
         "cambiar_estado",
+        "editar",
+        "archivar",
+        "restaurar",
       ],
-      estado_moderacion: ["pendiente", "aprobado", "oculto", "rechazado"],
+      estado_moderacion: [
+        "pendiente",
+        "aprobado",
+        "oculto",
+        "rechazado",
+        "archivado",
+      ],
       estado_obra: ["programada", "en_curso", "finalizada", "cancelada"],
       estado_reporte: [
         "recibido",

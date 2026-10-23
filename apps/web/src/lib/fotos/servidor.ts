@@ -1,6 +1,7 @@
 import "server-only";
 
-import { DURACION_URL_FOTO, firmarFoto } from "./firma";
+import { firmarFoto, rutaFoto, type TamanoFoto } from "./firma";
+import { DURACION_URL_FOTO } from "./respuesta";
 
 // El secreto solo vive en el servidor: firma las URLs de fotos públicas.
 export function secretoFotos(): string {
@@ -15,8 +16,11 @@ export function secretoFotos(): string {
 
 // URL de una foto pública, válida por DURACION_URL_FOTO. Si la foto o su
 // reporte dejan de ser públicos, la URL deja de servir aunque no venza.
-export function urlFotoPublica(fotoId: number): string {
+export function urlFotoPublica(
+  fotoId: number,
+  tamano: TamanoFoto = "completa",
+): string {
   const expira = Math.floor(Date.now() / 1000) + DURACION_URL_FOTO;
-  const firma = firmarFoto(fotoId, expira, secretoFotos());
-  return `/fotos/${fotoId}?exp=${expira}&firma=${firma}`;
+  const firma = firmarFoto(fotoId, expira, tamano, secretoFotos());
+  return rutaFoto(fotoId, expira, tamano, firma);
 }

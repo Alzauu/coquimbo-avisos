@@ -18,7 +18,7 @@ const textoMotivo = z
     error: "El motivo tiene caracteres no permitidos.",
   });
 
-const motivoObligatorio = z.preprocess(
+export const motivoObligatorio = z.preprocess(
   (valor) => textoLargo(valor ?? ""),
   textoMotivo,
 );

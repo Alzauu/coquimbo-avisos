@@ -43,6 +43,7 @@ export const NOMBRE_MODERACION: Record<EstadoModeracion, string> = {
   aprobado: "Publicado",
   oculto: "Oculto",
   rechazado: "No publicado",
+  archivado: "Archivado",
 };
 
 export const EXPLICACION_MODERACION: Record<EstadoModeracion, string> = {
@@ -50,6 +51,7 @@ export const EXPLICACION_MODERACION: Record<EstadoModeracion, string> = {
   aprobado: "Se muestra en el mapa público.",
   oculto: "Moderación lo retiró del mapa público.",
   rechazado: "Moderación lo revisó y decidió no publicarlo.",
+  archivado: "Administración lo archivó: ya no se muestra en el mapa público.",
 };
 
 // Colores distinguibles entre sí y con buen contraste sobre el mapa. El
@@ -148,4 +150,14 @@ const FORMATO_FECHA = new Intl.DateTimeFormat("es-CL", {
 
 export function formatearFecha(iso: string): string {
   return FORMATO_FECHA.format(new Date(iso));
+}
+
+// Primera parte de un texto largo, cortada en el último espacio antes de
+// `maximo` caracteres (sin partir emojis). null si no hace falta recortar.
+export function recortarTexto(texto: string, maximo: number): string | null {
+  const caracteres = Array.from(texto);
+  if (caracteres.length <= maximo) return null;
+  const corte = caracteres.slice(0, maximo).join("");
+  const espacio = corte.search(/\s\S*$/);
+  return `${(espacio > maximo / 2 ? corte.slice(0, espacio) : corte).trimEnd()}…`;
 }

@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 
 import { leerParametrosFoto, verificarFirmaFoto } from "@/lib/fotos/firma";
+import { reducirAMediana } from "@/lib/fotos/mediana";
 import { secretoFotos } from "@/lib/fotos/servidor";
 import { descargarFotoPublica } from "@/lib/supabase/service-role";
 
@@ -30,6 +31,7 @@ export async function GET(
     id,
     searchParams.get("exp"),
     searchParams.get("firma"),
+    searchParams.get("tam"),
   );
   const ahora = Math.floor(Date.now() / 1000);
   if (!parametros || !verificarFirmaFoto(parametros, secretoFotos(), ahora)) {
@@ -41,8 +43,22 @@ export async function GET(
   const foto = await descargarFotoPublica(parametros.fotoId);
   if (!foto) return noDisponible();
 
+  // La mediana se genera aquí, a partir de la foto guardada.
+  let cuerpo: BodyInit = foto;
+  if (parametros.tamano === "mediana") {
+    try {
+      const reducida = await reducirAMediana(
+        Buffer.from(await foto.arrayBuffer()),
+      );
+      cuerpo = new Uint8Array(reducida);
+    } catch {
+      console.error("reducirAMediana", parametros.fotoId);
+      return noDisponible();
+    }
+  }
+
   const restante = parametros.expira - ahora;
-  return new Response(foto, {
+  return new Response(cuerpo, {
     headers: {
       // El bucket solo acepta WebP.
       "Content-Type": "image/webp",

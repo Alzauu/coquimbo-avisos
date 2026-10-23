@@ -13,13 +13,35 @@ Tareas acordadas que quedaron fuera de un cambio y no deben olvidarse.
   rectángulo provisorio que incluye parte de Coquimbo. Cargar el polígono
   oficial en `comunas.limites` (fuente por definir) y quitar el rectángulo.
 
+## Administración
+
+- **Crear reportes como admin.** Hoy solo se crean desde `/reportar`, a
+  nombre de quien tiene la sesión y con el límite de 5 por hora. Definir si
+  un admin los crea ya aprobados, sin límite y a nombre de quién.
+- **Gestionar obras y cortes.** Las tablas `obras` (y la vista
+  `v_obras_vigentes`) existen, pero no hay pantallas para crearlas,
+  editarlas ni cerrarlas. Para cortes de luz y agua, solo avisos públicos
+  cargados a mano y citando la fuente (ver CLAUDE.md).
+- **Ver el registro de eliminaciones y el historial desde la app.**
+  `reportes_eliminados` y `reporte_historial` solo se consultan en el SQL
+  Editor; falta una vista de solo lectura para admins.
+- **Archivos huérfanos en reportes vigentes.** Si una foto se subió pero no
+  llegó a registrarse, su archivo queda en la carpeta del reporte. La
+  política de Storage solo deja borrar archivos de reportes que ya no
+  existen, así que se borra al eliminar el reporte; no hay limpieza antes.
+
 ## Fotos
 
-- **Tarjeta del reporte en el mapa con carrusel de fotos.** Hoy el mapa
-  selecciona el reporte en la lista y las fotos solo se ven en
-  `/reporte/[id]`. Usar las URLs firmadas propias (`urlFotoPublica`).
-- **Miniaturas.** Se sirve la foto completa (hasta 1600 px). Generar una
-  versión reducida al subir (sharp) para listas y tarjetas.
+- **Generar la versión mediana al subir la foto.** Hoy `/fotos/[id]?tam=m`
+  la genera con sharp en cada petición, a partir de la foto completa: el
+  navegador descarga ~800 px, pero la app sigue bajando de Supabase la
+  completa (hasta 800 KB) y gasta CPU en Vercel. Guardarla al subir
+  (`…-m.webp`) exige una migración que ajuste `puede_subir_foto_reporte`
+  (hoy máximo 3 archivos por reporte y solo `<uuid>.webp`),
+  `puede_registrar_foto` y `ruta_foto_publica`, además de generar las
+  medianas de las fotos ya subidas. Hacerlo cuando el tráfico lo justifique.
+- **Miniaturas para la lista.** La lista del mapa no muestra fotos; si se
+  agregan, usar la versión mediana o una más chica.
 - **Difuminar caras (y patentes) en el navegador** antes de subir la foto,
   como apoyo a la moderación, que hoy solo puede ocultar la foto entera.
 - **Volver a mostrar una foto oculta.** `ocultar_foto` no tiene inversa;

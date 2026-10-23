@@ -1,10 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   type Categoria,
+  COLOR_SIN_CATEGORIA,
   colorDeCategoria,
   type EstadoPublico,
   ESTADOS_PUBLICOS,
@@ -16,6 +17,7 @@ import { createClient } from "@/lib/supabase/client";
 
 import { FiltrosReportes } from "./filtros-reportes";
 import { ListaReportes } from "./lista-reportes";
+import { ID_TARJETA, TarjetaReporte } from "./tarjeta-reporte";
 
 // MapLibre necesita el navegador (WebGL): no se prerenderiza.
 const MapaReportes = dynamic(() => import("./mapa-reportes"), {
@@ -82,7 +84,13 @@ export function ExploradorReportes({
   >(() => new Set(ESTADOS_PUBLICOS));
   const [intento, setIntento] = useState(0);
   const [respuesta, setRespuesta] = useState<Respuesta | null>(null);
-  const [seleccionadoId, setSeleccionadoId] = useState<string | null>(null);
+  // Se guarda el reporte completo: la tarjeta sigue abierta aunque el
+  // reporte salga de la zona visible al mover el mapa.
+  const [seleccionado, setSeleccionado] = useState<ReportePublico | null>(null);
+  const seleccionadoId = seleccionado?.id ?? null;
+  // Dónde estaba el foco al abrir la tarjeta, para devolverlo al cerrarla.
+  const origenFoco = useRef<HTMLElement | null>(null);
+  const contenedorMapa = useRef<HTMLDivElement>(null);
   const [destino, setDestino] = useState<{ lng: number; lat: number } | null>(
     null,
   );
@@ -127,17 +135,42 @@ export function ExploradorReportes({
     ? SIN_REPORTES
     : (respuesta?.reportes ?? SIN_REPORTES);
 
-  const seleccionarEnMapa = useCallback((id: string) => {
-    setSeleccionadoId(id);
-    setPanelAbierto(true);
-  }, []);
+  // Recuerda el foco previo, salvo que ya esté dentro de la tarjeta.
+  function recordarFoco() {
+    const activo = document.activeElement;
+    if (activo instanceof HTMLElement && !activo.closest(`#${ID_TARJETA}`)) {
+      origenFoco.current = activo;
+    }
+  }
+
+  // Devuelve el foco a donde estaba (el reporte en la lista o el mapa).
+  // Si ya no está visible, por ejemplo con la lista plegada en el
+  // teléfono, lo deja en el mapa.
+  function cerrarTarjeta() {
+    setSeleccionado(null);
+    const origen = origenFoco.current;
+    origenFoco.current = null;
+    if (origen?.isConnected && origen.checkVisibility()) origen.focus();
+    else contenedorMapa.current?.querySelector<HTMLElement>("canvas")?.focus();
+  }
+
+  const seleccionarEnMapa = useCallback(
+    (id: string) => {
+      const reporte = reportes.find((r) => r.id === id);
+      if (!reporte) return;
+      recordarFoco();
+      setSeleccionado(reporte);
+    },
+    [reportes],
+  );
 
   function seleccionarEnLista(reporte: ReportePublico) {
     if (reporte.id === seleccionadoId) {
-      setSeleccionadoId(null);
+      cerrarTarjeta();
       return;
     }
-    setSeleccionadoId(reporte.id);
+    recordarFoco();
+    setSeleccionado(reporte);
     setDestino({ lng: reporte.longitud, lat: reporte.latitud });
   }
 
@@ -233,7 +266,10 @@ export function ExploradorReportes({
         </div>
       </section>
 
-      <div className="relative order-1 min-h-64 flex-1 md:order-2">
+      <div
+        ref={contenedorMapa}
+        className="relative order-1 min-h-64 flex-1 md:order-2"
+      >
         <MapaReportes
           reportes={reportes}
           colorPorCategoria={colorPorCategoria}
@@ -242,6 +278,21 @@ export function ExploradorReportes({
           onSeleccionar={seleccionarEnMapa}
           onCambioZona={setZona}
         />
+        {seleccionado && (
+          <TarjetaReporte
+            key={seleccionado.id}
+            reporte={seleccionado}
+            categoria={
+              categoriasPorId.get(seleccionado.categoria_id)?.nombre ??
+              "Sin categoría"
+            }
+            color={
+              colorPorCategoria.get(seleccionado.categoria_id) ??
+              COLOR_SIN_CATEGORIA
+            }
+            onCerrar={cerrarTarjeta}
+          />
+        )}
       </div>
     </div>
   );

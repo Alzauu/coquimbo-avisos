@@ -8,6 +8,8 @@ import { CENTRO_LA_SERENA } from "@/lib/reportes/presentacion";
 export type Punto = { latitud: number; longitud: number };
 
 type Props = {
+  // Punto donde parte el mapa (por defecto, el centro de La Serena).
+  inicial?: Punto;
   // Cada objeto nuevo mueve el mapa a ese punto (por ejemplo, "Usar mi ubicación").
   destino: (Punto & { zoom: number }) | null;
   onCambio: (punto: Punto) => void;
@@ -16,12 +18,16 @@ type Props = {
 // Mapa con un pin fijo al centro: el punto del reporte es el centro del
 // mapa, así que se elige moviendo el mapa con el dedo, el mouse o las
 // flechas del teclado (con el mapa enfocado).
-export default function SelectorUbicacion({ destino, onCambio }: Props) {
+export default function SelectorUbicacion({
+  inicial,
+  destino,
+  onCambio,
+}: Props) {
   const { contenedor, mapa, falloCarga } = useMapa({
     titulo:
       "Mapa para elegir la ubicación del reporte. El punto elegido es el centro del mapa; muévelo con las flechas del teclado.",
-    centro: CENTRO_LA_SERENA,
-    zoom: 14,
+    centro: inicial ? [inicial.longitud, inicial.latitud] : CENTRO_LA_SERENA,
+    zoom: inicial ? 16 : 14,
   });
 
   const alCambiar = useRef(onCambio);

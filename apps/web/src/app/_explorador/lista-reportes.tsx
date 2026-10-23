@@ -1,13 +1,13 @@
-import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 import {
   type Categoria,
   COLOR_SIN_CATEGORIA,
-  formatearFecha,
   NOMBRE_ESTADO,
   type ReportePublico,
 } from "@/lib/reportes/presentacion";
+
+import { ID_TARJETA } from "./tarjeta-reporte";
 
 type Props = {
   reportes: readonly ReportePublico[];
@@ -18,7 +18,8 @@ type Props = {
 };
 
 // Alternativa accesible al mapa: la misma información, navegable con
-// teclado y lector de pantalla.
+// teclado y lector de pantalla. Elegir un reporte abre su tarjeta, igual
+// que tocar su marcador.
 export function ListaReportes({
   reportes,
   categoriasPorId,
@@ -51,7 +52,7 @@ export function ListaReportes({
             <button
               type="button"
               aria-expanded={elegido}
-              aria-controls={`detalle-${reporte.id}`}
+              aria-controls={elegido ? ID_TARJETA : undefined}
               onClick={() => onSeleccionar(reporte)}
               className="flex w-full items-start gap-3 rounded-md p-3 text-left"
             >
@@ -77,28 +78,6 @@ export function ListaReportes({
                 )}
               </span>
             </button>
-
-            <div
-              id={`detalle-${reporte.id}`}
-              hidden={!elegido}
-              className="flex flex-col gap-1 px-3 pb-3 pl-9 text-sm"
-            >
-              {reporte.descripcion && <p>{reporte.descripcion}</p>}
-              <p className="text-zinc-600 dark:text-zinc-400">
-                Reportado el {formatearFecha(reporte.creado_en)}
-                {reporte.resuelto_en &&
-                  `. Resuelto el ${formatearFecha(reporte.resuelto_en)}`}
-                .
-              </p>
-              {/* Al elegir un punto en el mapa se abre este mismo detalle. */}
-              <Link
-                href={`/reporte/${reporte.id}`}
-                className="mt-1 self-start font-medium underline"
-              >
-                Ver detalle
-                <span className="sr-only"> de «{reporte.titulo}»</span>
-              </Link>
-            </div>
           </li>
         );
       })}

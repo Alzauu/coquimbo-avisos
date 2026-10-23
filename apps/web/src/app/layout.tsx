@@ -9,7 +9,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es-CL" className="h-full antialiased">
+    // Algunos navegadores (por ejemplo, Chrome en iOS) agregan atributos a
+    // <html> antes de la hidratación, y React avisaría de una diferencia
+    // con el HTML del servidor. suppressHydrationWarning solo ignora los
+    // atributos de esta etiqueta, no los de sus hijos: no lo uses en otros
+    // elementos.
+    <html lang="es-CL" className="h-full antialiased" suppressHydrationWarning>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
