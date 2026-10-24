@@ -3,13 +3,22 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { cerrarSesion } from "@/app/auth/acciones";
+import {
+  BOTON_SECUNDARIO,
+  ENLACE,
+  TARJETA,
+  TEXTO_ERROR,
+  TITULO_PAGINA,
+  TITULO_SECCION,
+} from "@/components/ui/estilos";
+import { tituloPagina } from "@/lib/marca";
 import type { Database } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 
 import { FormularioNombre } from "./formulario-nombre";
 
 export const metadata: Metadata = {
-  title: "Mi perfil · Coquimbo Avisos",
+  title: tituloPagina("Mi perfil"),
   robots: { index: false },
 };
 
@@ -34,19 +43,26 @@ export default async function PerfilPage() {
     .single();
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-4 py-12">
-      <h1 className="text-2xl font-bold">Mi perfil</h1>
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-4 py-8">
+      <div className="flex flex-col gap-2">
+        <Link href="/" className={`${ENLACE} self-start text-sm`}>
+          Volver al mapa
+        </Link>
+        <h1 className={TITULO_PAGINA}>Mi perfil</h1>
+      </div>
 
       {error || !perfil ? (
-        <p role="alert" className="text-red-700 dark:text-red-400">
+        <p role="alert" className={TEXTO_ERROR}>
           No pudimos cargar tu perfil. Inténtalo de nuevo más tarde.
         </p>
       ) : (
         <>
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-            <dt className="font-medium">Correo</dt>
+          <dl
+            className={`grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 p-4 ${TARJETA}`}
+          >
+            <dt className="font-semibold">Correo</dt>
             <dd className="break-all">{claims.email}</dd>
-            <dt className="font-medium">Rol</dt>
+            <dt className="font-semibold">Rol</dt>
             <dd>{NOMBRE_ROL[perfil.rol]}</dd>
           </dl>
 
@@ -58,33 +74,25 @@ export default async function PerfilPage() {
         aria-labelledby="titulo-tus-reportes"
         className="flex flex-col gap-2"
       >
-        <h2 id="titulo-tus-reportes" className="font-bold">
+        <h2 id="titulo-tus-reportes" className={TITULO_SECCION}>
           Tus reportes
         </h2>
         <ul className="flex flex-col gap-2">
           <li>
-            <Link href="/reportar" className="underline">
+            <Link href="/reportar" className={ENLACE}>
               Reportar un problema
             </Link>
           </li>
           <li>
-            <Link href="/mis-reportes" className="underline">
+            <Link href="/mis-reportes" className={ENLACE}>
               Ver mis reportes
-            </Link>
-          </li>
-          <li>
-            <Link href="/" className="underline">
-              Volver al mapa
             </Link>
           </li>
         </ul>
       </nav>
 
       <form action={cerrarSesion}>
-        <button
-          type="submit"
-          className="rounded-md border border-zinc-400 px-4 py-2 font-medium dark:border-zinc-600"
-        >
+        <button type="submit" className={BOTON_SECUNDARIO}>
           Cerrar sesión
         </button>
       </form>

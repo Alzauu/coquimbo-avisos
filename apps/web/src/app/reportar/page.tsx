@@ -2,13 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import {
+  ENLACE,
+  PAGINA,
+  TEXTO_ERROR,
+  TEXTO_SUAVE,
+  TITULO_PAGINA,
+} from "@/components/ui/estilos";
+import { tituloPagina } from "@/lib/marca";
 import { ordenDeCategoria } from "@/lib/reportes/categorias";
 import { createClient } from "@/lib/supabase/server";
 
 import { FormularioReporte } from "./formulario-reporte";
 
 export const metadata: Metadata = {
-  title: "Reportar un problema · Coquimbo Avisos",
+  title: tituloPagina("Reportar un problema"),
   robots: { index: false },
 };
 
@@ -32,13 +40,13 @@ export default async function ReportarPage() {
   );
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8">
+    <main className={PAGINA}>
       <div className="flex flex-col gap-2">
-        <Link href="/" className="self-start text-sm underline">
+        <Link href="/" className={`${ENLACE} self-start text-sm`}>
           Volver al mapa
         </Link>
-        <h1 className="text-2xl font-bold">Reportar un problema</h1>
-        <p className="text-zinc-700 dark:text-zinc-300">
+        <h1 className={TITULO_PAGINA}>Reportar un problema</h1>
+        <p className={TEXTO_SUAVE}>
           Tu reporte se revisará antes de aparecer en el mapa público. Por ahora
           solo recibimos reportes de La Serena.
         </p>
@@ -47,7 +55,7 @@ export default async function ReportarPage() {
       {categorias && categorias.length > 0 ? (
         <FormularioReporte categorias={categorias} />
       ) : (
-        <p role="alert" className="text-red-700 dark:text-red-400">
+        <p role="alert" className={TEXTO_ERROR}>
           No pudimos cargar el formulario. Inténtalo de nuevo más tarde.
         </p>
       )}

@@ -1,8 +1,16 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  BOTON_CHICO,
+  BOTON_PRINCIPAL,
+  ENLACE,
+  FOCO,
+  TEXTO_SUAVE,
+} from "@/components/ui/estilos";
 import { categoriaDe } from "@/lib/reportes/categorias";
 import {
   type Categoria,
@@ -22,9 +30,7 @@ import { ID_TARJETA, TarjetaReporte } from "./tarjeta-reporte";
 // MapLibre necesita el navegador (WebGL): no se prerenderiza.
 const MapaReportes = dynamic(() => import("./mapa-reportes"), {
   ssr: false,
-  loading: () => (
-    <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-900" />
-  ),
+  loading: () => <div className="absolute inset-0 bg-(--superficie-2)" />,
 });
 
 // Debe coincidir con el LIMIT de reportes_en_zona.
@@ -193,39 +199,52 @@ export function ExploradorReportes({
         : `${reportes.length} reportes en la zona visible.`;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+    // Mapa a pantalla completa; la lista y la tarjeta flotan encima. En el
+    // teléfono la lista es una hoja abajo (plegada al empezar); desde md,
+    // un panel a la izquierda, bajo el encabezado de la portada.
+    <div className="relative min-h-0 flex-1">
       <section
         aria-labelledby="titulo-reportes"
-        className="order-2 flex max-h-[55dvh] min-h-0 flex-col border-t border-zinc-300 md:order-1 md:max-h-none md:w-96 md:border-t-0 md:border-r dark:border-zinc-700"
+        // bottom-9: deja visibles los créditos del mapa (abajo a la derecha).
+        className="absolute inset-x-3 bottom-9 z-10 flex max-h-[60dvh] min-h-0 flex-col rounded-(--radio) border border-(--borde) bg-(--vidrio) shadow-(--sombra) backdrop-blur md:inset-x-auto md:top-19 md:bottom-3 md:left-3 md:max-h-none md:w-80 lg:w-96"
       >
-        <div className="flex items-start justify-between gap-3 px-4 py-3">
-          <div className="flex flex-col gap-1">
-            <h2 id="titulo-reportes" className="font-bold">
-              Reportes
-            </h2>
-            <p
-              aria-live="polite"
-              aria-busy={cargando}
-              className="text-sm text-zinc-700 dark:text-zinc-300"
-            >
-              {resumen}
-            </p>
-            {fallo && (
-              <button
-                type="button"
-                onClick={() => setIntento((n) => n + 1)}
-                className="self-start text-sm font-medium underline"
+        <div className="flex flex-col gap-2 p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <h2 id="titulo-reportes" className="font-bold">
+                Reportes
+              </h2>
+              <p
+                aria-live="polite"
+                aria-busy={cargando}
+                className={`text-sm ${TEXTO_SUAVE}`}
               >
-                Reintentar
-              </button>
-            )}
+                {resumen}
+              </p>
+              {fallo && (
+                <button
+                  type="button"
+                  onClick={() => setIntento((n) => n + 1)}
+                  className={`${ENLACE} self-start text-sm`}
+                >
+                  Reintentar
+                </button>
+              )}
+            </div>
+            {/* Sin sesión, el proxy lleva a ingresar y luego de vuelta. */}
+            <Link
+              href="/reportar"
+              className={`${BOTON_PRINCIPAL} min-h-11 shrink-0 rounded-full px-4`}
+            >
+              <span aria-hidden="true">+</span> Reportar
+            </Link>
           </div>
           <button
             type="button"
             aria-expanded={panelAbierto}
             aria-controls="contenido-reportes"
             onClick={() => setPanelAbierto((abierto) => !abierto)}
-            className="shrink-0 rounded-md border border-zinc-400 px-3 py-2 text-sm font-medium md:hidden dark:border-zinc-600"
+            className={`${BOTON_CHICO} self-start md:hidden`}
           >
             {panelAbierto ? "Ocultar lista" : "Ver lista y filtros"}
           </button>
@@ -233,15 +252,17 @@ export function ExploradorReportes({
 
         <div
           id="contenido-reportes"
-          className={`${panelAbierto ? "flex" : "hidden"} min-h-0 flex-col gap-4 overflow-y-auto px-4 pb-4 md:flex`}
+          className={`${panelAbierto ? "flex" : "hidden"} min-h-0 flex-col gap-3 overflow-y-auto px-3 pb-3 md:flex`}
         >
-          <details className="rounded-md border border-zinc-300 px-3 py-2 dark:border-zinc-700">
-            <summary className="cursor-pointer font-medium">
+          <details className="rounded-(--radio-control) border border-(--borde) bg-(--superficie)">
+            <summary
+              className={`flex min-h-11 cursor-pointer items-center rounded-(--radio-control) px-3 font-semibold ${FOCO}`}
+            >
               Filtros
               {filtrosActivos > 0 &&
                 ` (${filtrosActivos} ${filtrosActivos === 1 ? "activo" : "activos"})`}
             </summary>
-            <div className="pt-3">
+            <div className="px-3 pb-3">
               <FiltrosReportes
                 categorias={filtrables}
                 categoriasMarcadas={categoriasMarcadas}
@@ -265,10 +286,7 @@ export function ExploradorReportes({
         </div>
       </section>
 
-      <div
-        ref={contenedorMapa}
-        className="relative order-1 min-h-64 flex-1 md:order-2"
-      >
+      <div ref={contenedorMapa} className="absolute inset-0">
         <MapaReportes
           reportes={reportes}
           codigoPorCategoria={codigoPorCategoria}

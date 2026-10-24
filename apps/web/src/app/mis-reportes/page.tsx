@@ -2,6 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { FichaCategoria } from "@/components/categorias/ficha-categoria";
+import {
+  AVISO_EXITO,
+  BOTON_PRINCIPAL,
+  ENLACE,
+  PAGINA,
+  TARJETA,
+  TEXTO_ERROR,
+  TEXTO_SUAVE,
+  TITULO_PAGINA,
+} from "@/components/ui/estilos";
+import { tituloPagina } from "@/lib/marca";
+import { categoriaDe } from "@/lib/reportes/categorias";
 import {
   EXPLICACION_MODERACION,
   formatearFecha,
@@ -11,7 +24,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Mis reportes · Coquimbo Avisos",
+  title: tituloPagina("Mis reportes"),
   robots: { index: false },
 };
 
@@ -31,11 +44,14 @@ export default async function MisReportesPage({
 
   const [{ data: reportes, error }, { data: categorias }] = await Promise.all([
     supabase.rpc("mis_reportes"),
-    supabase.from("categorias").select("id, nombre").eq("tipo", "reporte"),
+    supabase
+      .from("categorias")
+      .select("id, codigo, nombre")
+      .eq("tipo", "reporte"),
   ]);
   if (error) console.error("mis_reportes", error.code);
-  const nombreCategoria = new Map(
-    (categorias ?? []).map((categoria) => [categoria.id, categoria.nombre]),
+  const categoriasPorId = new Map(
+    (categorias ?? []).map((categoria) => [categoria.id, categoria]),
   );
 
   // Una sola petición para firmar todas las fotos. Con la sesión del
@@ -59,22 +75,17 @@ export default async function MisReportesPage({
   const hayFotosFallidas = Number.isInteger(fallidas) && fallidas > 0;
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8">
+    <main className={PAGINA}>
       <div className="flex flex-col gap-2">
-        <Link href="/" className="self-start text-sm underline">
+        <Link href="/" className={`${ENLACE} self-start text-sm`}>
           Volver al mapa
         </Link>
-        <h1 className="text-2xl font-bold">Mis reportes</h1>
+        <h1 className={TITULO_PAGINA}>Mis reportes</h1>
       </div>
 
       {nuevo === "1" && (
-        <div
-          role="status"
-          className="flex flex-col gap-1 rounded-md bg-green-50 p-4 text-green-900 dark:bg-green-950 dark:text-green-100"
-        >
-          <p className="font-medium">
-            Tu reporte fue recibido y será revisado.
-          </p>
+        <div role="status" className={`flex flex-col gap-1 ${AVISO_EXITO}`}>
+          <p className="font-bold">Tu reporte fue recibido y será revisado.</p>
           {hayFotosFallidas && (
             <p>
               No pudimos subir{" "}
@@ -85,36 +96,42 @@ export default async function MisReportesPage({
         </div>
       )}
 
-      <Link
-        href="/reportar"
-        className="self-start rounded-md bg-zinc-900 px-4 py-2 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-      >
+      <Link href="/reportar" className={`${BOTON_PRINCIPAL} self-start`}>
         Reportar un problema
       </Link>
 
       {error ? (
-        <p role="alert" className="text-red-700 dark:text-red-400">
+        <p role="alert" className={TEXTO_ERROR}>
           No pudimos cargar tus reportes. Inténtalo de nuevo más tarde.
         </p>
       ) : !reportes || reportes.length === 0 ? (
-        <p>Todavía no has enviado reportes.</p>
+        <p className={TEXTO_SUAVE}>Todavía no has enviado reportes.</p>
       ) : (
         <ul className="flex flex-col gap-4">
           {reportes.map((reporte) => (
             <li
               key={reporte.id}
-              className="flex flex-col gap-2 rounded-md border border-zinc-300 p-4 dark:border-zinc-700"
+              className={`flex flex-col gap-2 p-4 ${TARJETA}`}
             >
-              <h2 className="font-bold">{reporte.titulo}</h2>
-              <p className="text-sm text-zinc-700 dark:text-zinc-300">
-                {nombreCategoria.get(reporte.categoria_id) ?? "Sin categoría"} ·
-                Enviado el {formatearFecha(reporte.creado_en)}
+              <div className="flex items-start gap-3">
+                <FichaCategoria
+                  categoria={categoriaDe(
+                    categoriasPorId.get(reporte.categoria_id)?.codigo,
+                  )}
+                  tamano={28}
+                />
+                <h2 className="font-bold break-words">{reporte.titulo}</h2>
+              </div>
+              <p className={`text-sm ${TEXTO_SUAVE}`}>
+                {categoriasPorId.get(reporte.categoria_id)?.nombre ??
+                  "Sin categoría"}{" "}
+                · Enviado el {formatearFecha(reporte.creado_en)}
               </p>
 
               <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-                <dt className="font-medium">Revisión</dt>
+                <dt className="font-semibold">Revisión</dt>
                 <dd>
-                  <span className="font-medium">
+                  <span className="font-semibold">
                     {NOMBRE_MODERACION[reporte.moderacion]}
                   </span>
                   . {EXPLICACION_MODERACION[reporte.moderacion]}
@@ -125,7 +142,7 @@ export default async function MisReportesPage({
                 {reporte.moderacion === "rechazado" &&
                   reporte.motivo_rechazo && (
                     <>
-                      <dt className="font-medium">Motivo</dt>
+                      <dt className="font-semibold">Motivo</dt>
                       <dd className="break-words whitespace-pre-line">
                         {reporte.motivo_rechazo}
                       </dd>
@@ -134,7 +151,7 @@ export default async function MisReportesPage({
                 {/* El estado del problema solo tiene sentido una vez publicado. */}
                 {reporte.moderacion === "aprobado" && (
                   <>
-                    <dt className="font-medium">Estado</dt>
+                    <dt className="font-semibold">Estado</dt>
                     <dd>{NOMBRE_ESTADO[reporte.estado]}</dd>
                   </>
                 )}
@@ -155,10 +172,12 @@ export default async function MisReportesPage({
                             src={url}
                             alt={descripcion}
                             loading="lazy"
-                            className="aspect-square w-full rounded-md border border-zinc-300 object-cover dark:border-zinc-700"
+                            className="aspect-square w-full rounded-(--radio-control) border border-(--borde) object-cover"
                           />
                         ) : (
-                          <p className="flex aspect-square items-center justify-center rounded-md border border-zinc-300 p-2 text-center text-xs dark:border-zinc-700">
+                          <p
+                            className={`flex aspect-square items-center justify-center rounded-(--radio-control) border border-(--borde) p-2 text-center text-xs ${TEXTO_SUAVE}`}
+                          >
                             {descripcion}: no disponible
                           </p>
                         )}

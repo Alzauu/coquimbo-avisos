@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
+import { tituloPagina } from "@/lib/marca";
 import {
   formatearFecha,
   NOMBRE_ESTADO,
@@ -13,7 +14,7 @@ import { clienteAdmin } from "../../acceso";
 import { FormularioEliminacion } from "./formulario-eliminacion";
 
 export const metadata: Metadata = {
-  title: "Eliminar reporte · Coquimbo Avisos",
+  title: tituloPagina("Eliminar reporte"),
   robots: { index: false },
 };
 

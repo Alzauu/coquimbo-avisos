@@ -2,6 +2,12 @@
 
 import { useActionState, useId, useState } from "react";
 
+import {
+  BOTON_PRINCIPAL,
+  BOTON_SECUNDARIO,
+  CAMPO,
+  FOCO,
+} from "@/components/ui/estilos";
 import type { Origen } from "@/lib/moderacion/esquemas";
 import { LARGO_MOTIVO } from "@/lib/moderacion/esquemas";
 import {
@@ -25,14 +31,7 @@ import {
 
 const INICIAL: EstadoAccion = { estado: "inicial" };
 
-const BOTON_PRINCIPAL =
-  "min-h-11 rounded-md bg-zinc-900 px-4 py-2 font-medium text-white disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900";
-const BOTON_SECUNDARIO =
-  "min-h-11 rounded-md border border-zinc-400 px-4 py-2 font-medium disabled:opacity-60 dark:border-zinc-600";
-const BOTON_PELIGRO =
-  "min-h-11 rounded-md bg-red-700 px-4 py-2 font-medium text-white disabled:opacity-60 dark:bg-red-600";
-const CAMPO =
-  "rounded-md border border-zinc-400 bg-transparent px-3 py-2 dark:border-zinc-600";
+const BOTON_PELIGRO = `min-h-11 rounded-(--radio-control) bg-red-700 px-4 py-2 font-bold text-white disabled:opacity-60 dark:bg-red-600 ${FOCO}`;
 
 function ErrorAccion({ estado, id }: { estado: EstadoAccion; id?: string }) {
   if (estado.estado !== "error") return null;
@@ -250,7 +249,7 @@ export function FormCambiarEstado({
           id={`${id}-estado`}
           name="estado"
           defaultValue={estadoActual}
-          className={`${CAMPO} min-h-11`}
+          className={CAMPO}
         >
           {ESTADOS_PUBLICOS.map((valor) => (
             <option key={valor} value={valor}>

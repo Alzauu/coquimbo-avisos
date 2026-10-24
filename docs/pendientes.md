@@ -13,6 +13,23 @@ Tareas acordadas que quedaron fuera de un cambio y no deben olvidarse.
   rectángulo provisorio que incluye parte de Coquimbo. Cargar el polígono
   oficial en `comunas.limites` (fuente por definir) y quitar el rectángulo.
 
+## Diseño
+
+- **Selector manual de tema (claro, oscuro o automático).** Hoy el tema
+  sigue al sistema, con el claro por defecto. Las variables de diseño quedan
+  preparadas para un atributo `data-theme="light"` o `data-theme="dark"` en
+  `<html>` que fuerce un tema. Falta el selector (por ejemplo, en Mi perfil)
+  y guardar la elección en una cookie, para que el servidor ponga el
+  atributo y la página no parpadee al cargar.
+- **Terminar de pasar las páginas a las variables de diseño.** La portada,
+  reportar, ingreso, Mis reportes y perfil usan las variables de
+  `globals.css` y las clases de `components/ui/estilos.ts`. El detalle de
+  un reporte (`/reporte/[id]`), administración y moderación solo recibieron
+  los botones y campos comunes; el resto sigue con clases `zinc-*` y
+  `dark:` (que respetan `data-theme`).
+- **Logo definitivo.** `components/marca/logo.tsx` es provisorio, igual que
+  el nombre en `lib/marca.ts`.
+
 ## Administración
 
 - **Crear reportes como admin.** Hoy solo se crean desde `/reportar`, a

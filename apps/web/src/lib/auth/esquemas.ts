@@ -4,7 +4,9 @@ export const esquemaCorreo = z
   .string("Escribe tu correo.")
   .trim()
   .pipe(
-    z.email("Escribe un correo válido.").max(254, "El correo es muy largo."),
+    z
+      .email("Revisa el correo: debe tener la forma nombre@ejemplo.cl.")
+      .max(254, "Ese correo es demasiado largo. Revisa que esté bien escrito."),
   );
 
 // Caracteres de control y de dirección de texto (se usan para suplantar nombres).

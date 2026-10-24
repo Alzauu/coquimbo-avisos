@@ -11,6 +11,16 @@ import {
 } from "react";
 
 import { FichaCategoria } from "@/components/categorias/ficha-categoria";
+import {
+  AVISO_ERROR,
+  BOTON_PRINCIPAL,
+  BOTON_SECUNDARIO,
+  ENLACE,
+  FOCO,
+  TEXTO_ERROR,
+  TEXTO_SUAVE,
+  TITULO_SECCION,
+} from "@/components/ui/estilos";
 import { categoriaDe } from "@/lib/reportes/categorias";
 import {
   type CampoReporte,
@@ -33,12 +43,13 @@ import type { Punto } from "./selector-ubicacion";
 // MapLibre necesita el navegador (WebGL): no se prerenderiza.
 const SelectorUbicacion = dynamic(() => import("./selector-ubicacion"), {
   ssr: false,
-  loading: () => (
-    <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-900" />
-  ),
+  loading: () => <div className="absolute inset-0 bg-(--superficie-2)" />,
 });
 
 const ESTADO_INICIAL: EstadoFormulario = { estado: "inicial" };
+
+// Las secciones van separadas por una línea, sin tarjetas.
+const SECCION = "border-t border-(--borde) pt-5";
 
 const ETIQUETA_CAMPO: Record<CampoReporte, string> = {
   categoria_id: "Categoría",
@@ -181,15 +192,15 @@ export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
           ref={resumen}
           role="alert"
           tabIndex={-1}
-          className="rounded-md border-2 border-red-700 p-4 dark:border-red-400"
+          className={`${AVISO_ERROR} ${FOCO}`}
         >
-          <p className="font-medium">{problema.mensaje}</p>
+          <p className={TEXTO_ERROR}>{problema.mensaje}</p>
           {Object.keys(problema.errores).length > 0 && (
             <ul className="mt-2 list-disc pl-5">
               {(Object.keys(problema.errores) as CampoReporte[]).map(
                 (campo) => (
                   <li key={campo}>
-                    <a href={`#${ID_CAMPO[campo]}`} className="underline">
+                    <a href={`#${ID_CAMPO[campo]}`} className={ENLACE}>
                       {ETIQUETA_CAMPO[campo]}: {problema.errores[campo]}
                     </a>
                   </li>
@@ -202,20 +213,17 @@ export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
 
       <section
         aria-labelledby="titulo-ubicacion"
-        className="flex flex-col gap-2"
+        className={`flex flex-col gap-2 ${SECCION}`}
       >
-        <h2 id="titulo-ubicacion" className="text-lg font-bold">
+        <h2 id="titulo-ubicacion" className={TITULO_SECCION}>
           Ubicación
         </h2>
-        <p
-          id="ayuda-ubicacion"
-          className="text-sm text-zinc-700 dark:text-zinc-300"
-        >
+        <p id="ayuda-ubicacion" className={`text-sm ${TEXTO_SUAVE}`}>
           El reporte quedará en el punto marcado al centro del mapa. Mueve el
           mapa con el dedo o el mouse; con el mapa enfocado, también con las
           flechas del teclado.
         </p>
-        <div className="relative h-72 overflow-hidden rounded-md border border-zinc-300 md:h-96 dark:border-zinc-700">
+        <div className="relative h-72 overflow-hidden rounded-(--radio-control) border-2 border-(--borde-control) md:h-96">
           <SelectorUbicacion destino={destino} onCambio={setUbicacion} />
         </div>
         <button
@@ -223,32 +231,35 @@ export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
           type="button"
           onClick={usarMiUbicacion}
           aria-describedby={describir("ubicacion", "ayuda-ubicacion")}
-          className="self-start rounded-md border border-zinc-400 px-4 py-2 font-medium dark:border-zinc-600"
+          className={`${BOTON_SECUNDARIO} self-start`}
         >
           Usar mi ubicación
         </button>
-        <p className="text-sm text-zinc-700 dark:text-zinc-300">
+        <p className={`text-sm ${TEXTO_SUAVE}`}>
           Punto elegido: {formatoCoordenada.format(ubicacion.latitud)},{" "}
           {formatoCoordenada.format(ubicacion.longitud)}
         </p>
         <div aria-live="polite" className="flex flex-col gap-1 text-sm">
           {avisoUbicacion && <p>{avisoUbicacion}</p>}
           {fueraDeLaSerena && !errores.ubicacion && (
-            <p className="font-medium">
+            <p className="font-semibold">
               Atención: este punto está fuera de La Serena. Por ahora solo
               recibimos reportes de La Serena.
             </p>
           )}
         </div>
         {errores.ubicacion && (
-          <p id="error-ubicacion" className="text-red-700 dark:text-red-400">
+          <p id="error-ubicacion" className={TEXTO_ERROR}>
             {errores.ubicacion}
           </p>
         )}
       </section>
 
-      <section aria-labelledby="titulo-detalle" className="flex flex-col gap-4">
-        <h2 id="titulo-detalle" className="text-lg font-bold">
+      <section
+        aria-labelledby="titulo-detalle"
+        className={`flex flex-col gap-4 ${SECCION}`}
+      >
+        <h2 id="titulo-detalle" className={TITULO_SECCION}>
           Detalle
         </h2>
 
@@ -260,12 +271,12 @@ export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
           aria-describedby={describir("categoria_id")}
           className="flex flex-col gap-2"
         >
-          <legend className="mb-1 font-medium">Categoría</legend>
+          <legend className="mb-1 font-semibold">Categoría</legend>
           <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:grid-cols-4">
             {categorias.map((categoria) => (
               <label
                 key={categoria.id}
-                className="flex min-h-12 cursor-pointer items-center gap-2 rounded-md border border-zinc-300 px-3 py-2 has-[:checked]:border-zinc-900 has-[:checked]:bg-zinc-100 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 dark:border-zinc-700 dark:has-[:checked]:border-zinc-100 dark:has-[:checked]:bg-zinc-800"
+                className="flex min-h-12 cursor-pointer items-center gap-2 rounded-(--radio-control) border-2 border-(--borde) bg-(--superficie) px-3 py-2 has-[:checked]:border-(--tinta) has-[:checked]:bg-(--superficie-2) has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-(--foco)"
               >
                 <input
                   type="radio"
@@ -273,7 +284,7 @@ export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
                   value={categoria.id}
                   checked={valores.categoria_id === String(categoria.id)}
                   onChange={(e) => cambiar("categoria_id", e.target.value)}
-                  className="size-4 shrink-0"
+                  className="size-4 shrink-0 accent-(--tinta)"
                 />
                 <FichaCategoria
                   categoria={categoriaDe(categoria.codigo)}
@@ -323,18 +334,22 @@ export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
         />
       </section>
 
-      <SelectorFotos
-        fotos={fotos}
-        onCambio={setFotos}
-        onProcesando={setProcesandoFotos}
-        error={errores.fotos}
-      />
+      {/* La línea va en un div: en el <fieldset> la leyenda se dibujaría
+          sobre el borde. */}
+      <div className={SECCION}>
+        <SelectorFotos
+          fotos={fotos}
+          onCambio={setFotos}
+          onProcesando={setProcesandoFotos}
+          error={errores.fotos}
+        />
+      </div>
 
       <div className="flex flex-col gap-2">
         <button
           type="submit"
           disabled={enviando || procesandoFotos}
-          className="rounded-md bg-zinc-900 px-4 py-3 font-medium text-white disabled:opacity-60 sm:self-start dark:bg-zinc-100 dark:text-zinc-900"
+          className={`${BOTON_PRINCIPAL} sm:self-start`}
         >
           {enviando ? "Enviando reporte…" : "Enviar reporte"}
         </button>

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 
+import { tituloPagina } from "@/lib/marca";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Prueba de base de datos · Coquimbo Avisos",
+  title: tituloPagina("Prueba de base de datos"),
   robots: { index: false },
 };
 

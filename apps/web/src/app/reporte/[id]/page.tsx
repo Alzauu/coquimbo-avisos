@@ -12,6 +12,7 @@ import {
 } from "@/app/moderacion/formularios";
 import { esModerador } from "@/lib/auth/rol";
 import { urlFotoPublica } from "@/lib/fotos/servidor";
+import { tituloPagina } from "@/lib/marca";
 import {
   type EstadoPublico,
   ESTADOS_PUBLICOS,
@@ -67,7 +68,7 @@ export async function generateMetadata({
 }: PageProps<"/reporte/[id]">): Promise<Metadata> {
   const reporte = await cargarReporte((await params).id);
   return {
-    title: `${reporte?.titulo ?? "Reporte"} · Coquimbo Avisos`,
+    title: tituloPagina(reporte?.titulo ?? "Reporte"),
     // Contenido de vecinos: por ahora no se indexa en buscadores.
     robots: { index: false },
   };

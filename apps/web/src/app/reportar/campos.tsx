@@ -1,3 +1,4 @@
+import { CAMPO, TEXTO_ERROR, TEXTO_SUAVE } from "@/components/ui/estilos";
 import {
   type CampoReporte,
   type ErroresReporte,
@@ -16,7 +17,7 @@ export function ErrorCampo({
 }) {
   if (!errores[campo]) return null;
   return (
-    <p id={`error-${campo}`} className="text-red-700 dark:text-red-400">
+    <p id={`error-${campo}`} className={TEXTO_ERROR}>
       {errores[campo]}
     </p>
   );
@@ -57,19 +58,15 @@ export function CampoTexto({
     // El contador se lee junto con la ayuda al enfocar el campo, sin
     // anunciar cada tecla.
     "aria-describedby": describir(campo, `ayuda-${campo}`, `contador-${campo}`),
-    className:
-      "rounded-md border border-zinc-400 bg-transparent px-3 py-2 dark:border-zinc-600",
+    className: CAMPO,
   };
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={campo} className="font-medium">
+      <label htmlFor={campo} className="font-semibold">
         {etiqueta}
       </label>
-      <p
-        id={`ayuda-${campo}`}
-        className="text-sm text-zinc-700 dark:text-zinc-300"
-      >
+      <p id={`ayuda-${campo}`} className={`text-sm ${TEXTO_SUAVE}`}>
         {ayuda}
       </p>
       {multilinea ? (
@@ -79,7 +76,7 @@ export function CampoTexto({
       )}
       <p
         id={`contador-${campo}`}
-        className={`text-sm ${usados > maximo ? "font-medium text-red-700 dark:text-red-400" : "text-zinc-700 dark:text-zinc-300"}`}
+        className={`text-sm ${usados > maximo ? TEXTO_ERROR : TEXTO_SUAVE}`}
       >
         {usados} de {maximo} caracteres
         {usados > maximo && ` (te pasaste por ${usados - maximo})`}

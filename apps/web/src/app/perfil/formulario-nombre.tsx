@@ -2,6 +2,14 @@
 
 import { useActionState } from "react";
 
+import {
+  AVISO_EXITO,
+  BOTON_PRINCIPAL,
+  CAMPO,
+  TEXTO_ERROR,
+  TEXTO_SUAVE,
+} from "@/components/ui/estilos";
+
 import { actualizarNombre, type EstadoNombre } from "./acciones";
 
 const ESTADO_INICIAL: EstadoNombre = { estado: "inicial" };
@@ -15,13 +23,10 @@ export function FormularioNombre({ nombreActual }: { nombreActual: string }) {
   return (
     <form action={accion} className="flex flex-col gap-3" noValidate>
       <div className="flex flex-col gap-1">
-        <label htmlFor="nombre_visible" className="font-medium">
+        <label htmlFor="nombre_visible" className="font-semibold">
           Nombre visible
         </label>
-        <p
-          id="ayuda-nombre"
-          className="text-sm text-zinc-600 dark:text-zinc-400"
-        >
+        <p id="ayuda-nombre" className={`text-sm ${TEXTO_SUAVE}`}>
           Es el nombre que verán otras personas. Entre 2 y 50 caracteres.
         </p>
         <input
@@ -39,25 +44,27 @@ export function FormularioNombre({ nombreActual }: { nombreActual: string }) {
               ? "ayuda-nombre error-nombre"
               : "ayuda-nombre"
           }
-          className="rounded-md border border-zinc-400 bg-transparent px-3 py-2 dark:border-zinc-600"
+          className={CAMPO}
         />
       </div>
 
       <div aria-live="polite">
         {estado.estado === "error" && (
-          <p id="error-nombre" className="text-red-700 dark:text-red-400">
+          <p id="error-nombre" className={TEXTO_ERROR}>
             {estado.mensaje}
           </p>
         )}
         {estado.estado === "guardado" && (
-          <p className="text-green-800 dark:text-green-300">Nombre guardado.</p>
+          <p className={`${AVISO_EXITO} py-2 font-semibold`}>
+            Nombre guardado.
+          </p>
         )}
       </div>
 
       <button
         type="submit"
         disabled={guardando}
-        className="self-start rounded-md bg-zinc-900 px-4 py-2 font-medium text-white disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900"
+        className={`${BOTON_PRINCIPAL} self-start`}
       >
         {guardando ? "Guardando…" : "Guardar"}
       </button>

@@ -2,6 +2,12 @@
 
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 
+import {
+  BOTON_CHICO,
+  TEXTO_ERROR,
+  TEXTO_SUAVE,
+  TITULO_SECCION,
+} from "@/components/ui/estilos";
 import { MAX_FOTOS } from "@/lib/reportes/esquemas";
 
 import { reducirFoto } from "./reducir-foto";
@@ -96,17 +102,17 @@ export function SelectorFotos({ fotos, onCambio, onProcesando, error }: Props) {
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="font-medium">Fotos (opcional)</legend>
-      <p id="ayuda-fotos" className="text-sm text-zinc-700 dark:text-zinc-300">
+      <legend className={TITULO_SECCION}>Fotos (opcional)</legend>
+      <p id="ayuda-fotos" className={`text-sm ${TEXTO_SUAVE}`}>
         Hasta {MAX_FOTOS} fotos. Evita que se vean rostros o patentes: el equipo
         de moderación puede ocultarlas.
       </p>
 
       <label
-        className={`self-start rounded-md border border-zinc-400 px-4 py-2 font-medium dark:border-zinc-600 ${
+        className={`flex min-h-20 items-center justify-center rounded-(--radio-control) border-2 border-dashed border-(--borde-control) bg-(--superficie) px-4 font-bold ${
           lleno || procesando
             ? "cursor-not-allowed opacity-60"
-            : "cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2"
+            : "cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-(--foco)"
         }`}
       >
         {lleno
@@ -131,7 +137,7 @@ export function SelectorFotos({ fotos, onCambio, onProcesando, error }: Props) {
         {aviso}
       </p>
       {error && (
-        <p id="error-fotos" className="text-red-700 dark:text-red-400">
+        <p id="error-fotos" className={TEXTO_ERROR}>
           {error}
         </p>
       )}
@@ -145,14 +151,14 @@ export function SelectorFotos({ fotos, onCambio, onProcesando, error }: Props) {
               <img
                 src={foto.vistaPrevia}
                 alt={`Foto ${indice + 1} elegida`}
-                className="aspect-square w-full rounded-md border border-zinc-300 object-cover dark:border-zinc-700"
+                className="aspect-square w-full rounded-(--radio-control) border border-(--borde) object-cover"
               />
               <button
                 type="button"
                 onClick={() => quitar(foto, indice + 1)}
                 // Mientras se preparan otras fotos la lista no debe cambiar.
                 disabled={procesando}
-                className="rounded-md border border-zinc-400 px-2 py-1 text-sm disabled:opacity-60 dark:border-zinc-600"
+                className={`${BOTON_CHICO} px-2`}
               >
                 Quitar foto {indice + 1}
               </button>

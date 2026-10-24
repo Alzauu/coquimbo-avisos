@@ -130,7 +130,7 @@ export function MarcoMapa({
 
 function AvisoMapa({ children }: { children: React.ReactNode }) {
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 p-6 dark:bg-zinc-900">
+    <div className="absolute inset-0 flex items-center justify-center bg-(--superficie-2) p-6">
       <p role="status" className="max-w-sm text-center">
         {children}
       </p>

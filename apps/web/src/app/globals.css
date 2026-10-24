@@ -1,13 +1,109 @@
 @import "tailwindcss";
 
+/* Variables de diseño (dirección «Mirador»: el mapa es lo principal,
+   controles flotantes y mínimos). Se usan con la sintaxis de Tailwind para
+   variables, por ejemplo bg-(--superficie) o text-(--tinta-suave).
+
+   Tema: claro por defecto y oscuro si el sistema lo pide. Un atributo
+   data-theme="light" o "dark" en <html> fuerza uno de los dos (para un
+   selector manual futuro; ver docs/pendientes.md).
+
+   Reglas del acento (--acento, verde lima): solo como fondo de botones,
+   avisos en bloque o realces, siempre con --tinta-sobre-acento encima.
+   Nunca como punto, insignia ni círculo pequeño: así no se confunde con
+   las fichas de categoría. Todas las combinaciones pasan contraste AA. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --fondo: #f3f5f7;
+  --superficie: #ffffff;
+  --superficie-2: #e9edf1;
+  /* Texto principal y secundario (AA sobre fondo y superficies). */
+  --tinta: #16191d;
+  --tinta-suave: #4b5563;
+  /* Separadores decorativos y borde de campos (3:1). */
+  --borde: #d5dbe1;
+  --borde-control: #7b8794;
+  --acento: #d7f59a;
+  --tinta-sobre-acento: #16191d;
+  /* Botón principal. */
+  --primario: #16191d;
+  --sobre-primario: #ffffff;
+  /* Anillo de foco (3:1 sobre fondo y superficies). */
+  --foco: #16191d;
+  --error: #b42318;
+  --exito-fondo: #e4f5e9;
+  --exito-tinta: #14532d;
+  /* Paneles translúcidos sobre el mapa: casi opacos, para que el texto
+     mantenga el contraste sobre cualquier zona del mapa. */
+  --vidrio: rgb(255 255 255 / 0.92);
+  --logo-interior: #d7f59a;
+  --sombra: 0 12px 32px rgb(15 20 25 / 0.14);
+  --radio: 20px;
+  --radio-control: 14px;
+
+  /* Controles nativos (listas de <select>, casillas, barras de
+     desplazamiento) en el tema activo: sin esto, en modo oscuro las
+     opciones de un <select> se dibujan claras con texto claro. */
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fondo: #0e1013;
+    --superficie: #171a1f;
+    --superficie-2: #20242b;
+    --tinta: #eef1f4;
+    --tinta-suave: #a9b1bb;
+    --borde: #2b3038;
+    --borde-control: #77818d;
+    --acento: #d7f59a;
+    --tinta-sobre-acento: #16191d;
+    --primario: #d7f59a;
+    --sobre-primario: #16191d;
+    --foco: #d7f59a;
+    --error: #ff9f95;
+    --exito-fondo: #15301f;
+    --exito-tinta: #c9eed5;
+    --vidrio: rgb(23 26 31 / 0.92);
+    --logo-interior: #0e1013;
+    --sombra: 0 12px 32px rgb(0 0 0 / 0.55);
+    color-scheme: dark;
+  }
+}
+
+/* Mismos valores que el bloque anterior: tema oscuro forzado. */
+:root[data-theme="dark"] {
+  --fondo: #0e1013;
+  --superficie: #171a1f;
+  --superficie-2: #20242b;
+  --tinta: #eef1f4;
+  --tinta-suave: #a9b1bb;
+  --borde: #2b3038;
+  --borde-control: #77818d;
+  --acento: #d7f59a;
+  --tinta-sobre-acento: #16191d;
+  --primario: #d7f59a;
+  --sobre-primario: #16191d;
+  --foco: #d7f59a;
+  --error: #ff9f95;
+  --exito-fondo: #15301f;
+  --exito-tinta: #c9eed5;
+  --vidrio: rgb(23 26 31 / 0.92);
+  --logo-interior: #0e1013;
+  --sombra: 0 12px 32px rgb(0 0 0 / 0.55);
+  color-scheme: dark;
+}
+
+/* Las clases dark: que quedan (administración y moderación) siguen el
+   mismo tema que las variables, también si data-theme lo fuerza. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
 }
 
 /* Entrada de la tarjeta del mapa. Se usa con motion-safe: sin animación
@@ -27,28 +123,9 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, sans-serif;
-}
-
-/* Controles nativos (listas de <select>, casillas, barras de desplazamiento)
-   en el tema del sistema: sin esto, en modo oscuro las opciones de un
-   <select> se dibujan claras con texto claro. */
-:root {
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-  }
+  background: var(--fondo);
+  color: var(--tinta);
+  /* Figtree (next/font, ver layout.tsx) con la del sistema de respaldo. */
+  font-family: var(--fuente-figtree), system-ui, sans-serif;
 }

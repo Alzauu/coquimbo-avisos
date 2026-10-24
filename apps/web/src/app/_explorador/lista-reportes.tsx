@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 
 import { FichaCategoria } from "@/components/categorias/ficha-categoria";
+import { FOCO, TEXTO_SUAVE } from "@/components/ui/estilos";
 import { categoriaDe } from "@/lib/reportes/categorias";
 import {
   type Categoria,
@@ -42,10 +43,8 @@ export function ListaReportes({
           <li
             key={reporte.id}
             ref={elegido ? seleccionado : undefined}
-            className={`rounded-md border ${
-              elegido
-                ? "border-zinc-900 dark:border-zinc-100"
-                : "border-zinc-300 dark:border-zinc-700"
+            className={`rounded-(--radio-control) border-2 bg-(--superficie) ${
+              elegido ? "border-(--tinta)" : "border-(--borde)"
             }`}
           >
             <button
@@ -53,20 +52,20 @@ export function ListaReportes({
               aria-expanded={elegido}
               aria-controls={elegido ? ID_TARJETA : undefined}
               onClick={() => onSeleccionar(reporte)}
-              className="flex w-full items-start gap-3 rounded-md p-3 text-left"
+              className={`flex w-full items-start gap-3 rounded-(--radio-control) p-3 text-left ${FOCO}`}
             >
               <FichaCategoria
                 categoria={categoriaDe(categoria?.codigo)}
                 tamano={24}
               />
               <span className="flex flex-col gap-0.5">
-                <span className="font-medium">{reporte.titulo}</span>
-                <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                <span className="font-semibold">{reporte.titulo}</span>
+                <span className={`text-sm ${TEXTO_SUAVE}`}>
                   {categoria?.nombre ?? "Sin categoría"} ·{" "}
                   {NOMBRE_ESTADO[reporte.estado]}
                 </span>
                 {reporte.direccion_referencia && (
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <span className={`text-sm ${TEXTO_SUAVE}`}>
                     {reporte.direccion_referencia}
                   </span>
                 )}

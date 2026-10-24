@@ -6,10 +6,17 @@ import { esquemaCorreo, primerError } from "@/lib/auth/esquemas";
 import { rutaSegura } from "@/lib/auth/redireccion";
 import { createClient } from "@/lib/supabase/server";
 
+// El tipo de error decide dónde se muestra: "correo", junto al campo;
+// "frecuencia" (demasiados intentos), como aviso, y además hace esperar
+// antes de reenviar; "general", como aviso.
 export type EstadoIngreso =
   | { estado: "inicial" }
   | { estado: "enviado"; correo: string }
-  | { estado: "error"; mensaje: string };
+  | {
+      estado: "error";
+      mensaje: string;
+      tipo: "correo" | "frecuencia" | "general";
+    };
 
 const ERROR_GENERICO =
   "No pudimos enviar el enlace. Inténtalo de nuevo en unos minutos.";
@@ -20,12 +27,18 @@ export async function enviarEnlace(
 ): Promise<EstadoIngreso> {
   const correo = esquemaCorreo.safeParse(formData.get("correo"));
   if (!correo.success) {
-    return { estado: "error", mensaje: primerError(correo.error) };
+    return {
+      estado: "error",
+      mensaje: primerError(correo.error),
+      tipo: "correo",
+    };
   }
 
   // Next.js ya comprueba que el Origin de una Server Action coincida con el host.
   const origen = (await headers()).get("origin");
-  if (!origen) return { estado: "error", mensaje: ERROR_GENERICO };
+  if (!origen) {
+    return { estado: "error", mensaje: ERROR_GENERICO, tipo: "general" };
+  }
 
   // Supabase agrega &code=... a esta URL (plantilla estándar, PKCE) o, con
   // una plantilla propia, &token_hash=...&type=email.
@@ -46,11 +59,12 @@ export async function enviarEnlace(
       return {
         estado: "error",
         mensaje:
-          "Pediste varios enlaces seguidos. Espera un momento y vuelve a intentarlo.",
+          "Pediste varios enlaces seguidos. Espera un minuto y vuelve a intentarlo.",
+        tipo: "frecuencia",
       };
     }
     console.error("signInWithOtp", error.status, error.code);
-    return { estado: "error", mensaje: ERROR_GENERICO };
+    return { estado: "error", mensaje: ERROR_GENERICO, tipo: "general" };
   }
 
   return { estado: "enviado", correo: correo.data };

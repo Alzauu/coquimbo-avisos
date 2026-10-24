@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import { FichaCategoria } from "@/components/categorias/ficha-categoria";
+import { BOTON_CHICO, ENLACE, TEXTO_SUAVE } from "@/components/ui/estilos";
 import {
   DURACION_URL_FOTO,
   esquemaFotosReporte,
@@ -48,7 +49,9 @@ type Props = {
 };
 
 // Resumen de un reporte elegido en el mapa o en la lista. Diálogo no
-// modal: el mapa y la lista siguen disponibles. Se monta de nuevo para
+// modal: el mapa y la lista siguen disponibles. En el teléfono es una hoja
+// abajo; desde md, arriba a la derecha (la lista va a la izquierda), con
+// espacio para los botones de zoom. Se monta de nuevo para
 // cada reporte (key), así que su estado parte de cero.
 export function TarjetaReporte({
   reporte,
@@ -80,7 +83,7 @@ export function TarjetaReporte({
       role="dialog"
       aria-labelledby="titulo-tarjeta"
       onKeyDown={alPresionarTecla}
-      className="fixed inset-x-0 bottom-0 z-20 flex max-h-[65dvh] flex-col gap-3 overflow-y-auto overscroll-contain rounded-t-xl border-t border-zinc-300 bg-white p-4 shadow-2xl motion-safe:animate-aparecer md:absolute md:inset-x-auto md:top-3 md:bottom-auto md:left-3 md:max-h-[calc(100%-1.5rem)] md:w-96 md:rounded-xl md:border dark:border-zinc-700 dark:bg-zinc-950"
+      className="fixed inset-x-0 bottom-0 z-20 flex max-h-[65dvh] flex-col gap-3 overflow-y-auto overscroll-contain rounded-t-(--radio) border-t border-(--borde) bg-(--superficie) p-4 shadow-(--sombra) motion-safe:animate-aparecer md:absolute md:inset-x-auto md:top-3 md:right-14 md:bottom-auto md:max-h-[calc(100%-1.5rem)] md:w-80 md:rounded-(--radio) md:border lg:w-96"
     >
       <div className="flex items-start justify-between gap-3">
         <h2
@@ -94,13 +97,13 @@ export function TarjetaReporte({
         <button
           type="button"
           onClick={onCerrar}
-          className="min-h-11 shrink-0 rounded-md border border-zinc-400 px-3 text-sm font-medium dark:border-zinc-600"
+          className={`${BOTON_CHICO} shrink-0`}
         >
           Cerrar
         </button>
       </div>
 
-      <p className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+      <p className={`flex items-center gap-2 text-sm ${TEXTO_SUAVE}`}>
         <FichaCategoria categoria={categoria} tamano={24} />
         <span>
           {nombreCategoria} · Estado: {NOMBRE_ESTADO[reporte.estado]}
@@ -123,7 +126,7 @@ export function TarjetaReporte({
               aria-expanded={descripcionCompleta}
               aria-controls="descripcion-tarjeta"
               onClick={() => setDescripcionCompleta((completa) => !completa)}
-              className="text-sm font-medium underline"
+              className={`${ENLACE} text-sm`}
             >
               {descripcionCompleta ? "Ver menos" : "Ver más"}
             </button>
@@ -134,24 +137,21 @@ export function TarjetaReporte({
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
         {reporte.direccion_referencia && (
           <>
-            <dt className="font-medium">Referencia</dt>
+            <dt className="font-semibold">Referencia</dt>
             <dd className="break-words">{reporte.direccion_referencia}</dd>
           </>
         )}
-        <dt className="font-medium">Reportado</dt>
+        <dt className="font-semibold">Reportado</dt>
         <dd>{formatearFecha(reporte.creado_en)}</dd>
         {reporte.resuelto_en && (
           <>
-            <dt className="font-medium">Resuelto</dt>
+            <dt className="font-semibold">Resuelto</dt>
             <dd>{formatearFecha(reporte.resuelto_en)}</dd>
           </>
         )}
       </dl>
 
-      <Link
-        href={`/reporte/${reporte.id}`}
-        className="self-start font-medium underline"
-      >
+      <Link href={`/reporte/${reporte.id}`} className={`${ENLACE} self-start`}>
         Ver detalle
         <span className="sr-only"> de «{reporte.titulo}»</span>
       </Link>
@@ -221,14 +221,14 @@ function FotosReporte({
 
   if (carga.estado === "cargando") {
     return (
-      <p className="text-sm text-zinc-700 dark:text-zinc-300" role="status">
+      <p className={`text-sm ${TEXTO_SUAVE}`} role="status">
         Cargando fotos…
       </p>
     );
   }
   if (carga.estado === "error") {
     return (
-      <p className="text-sm text-zinc-700 dark:text-zinc-300" role="status">
+      <p className={`text-sm ${TEXTO_SUAVE}`} role="status">
         No pudimos cargar las fotos.{" "}
         <button
           type="button"
@@ -236,7 +236,7 @@ function FotosReporte({
             setCarga({ estado: "cargando" });
             setIntento((n) => n + 1);
           }}
-          className="font-medium underline"
+          className={ENLACE}
         >
           Reintentar
         </button>
@@ -297,10 +297,12 @@ function FotosReporte({
         onPointerCancel={() => {
           toque.current = null;
         }}
-        className="aspect-[4/3] touch-pan-y overflow-hidden rounded-md bg-zinc-100 select-none dark:bg-zinc-900"
+        className="aspect-[4/3] touch-pan-y overflow-hidden rounded-(--radio-control) bg-(--superficie-2) select-none"
       >
         {fallidas.has(foto.id) ? (
-          <p className="flex h-full items-center justify-center p-4 text-center text-sm text-zinc-700 dark:text-zinc-300">
+          <p
+            className={`flex h-full items-center justify-center p-4 text-center text-sm ${TEXTO_SUAVE}`}
+          >
             No pudimos cargar esta foto.
           </p>
         ) : (
@@ -325,7 +327,7 @@ function FotosReporte({
             type="button"
             onClick={() => ir(-1)}
             aria-disabled={actual === 0}
-            className="min-h-11 rounded-md border border-zinc-400 px-3 text-sm font-medium aria-disabled:opacity-50 dark:border-zinc-600"
+            className={BOTON_CHICO}
           >
             Foto anterior
           </button>
@@ -340,7 +342,7 @@ function FotosReporte({
             type="button"
             onClick={() => ir(1)}
             aria-disabled={actual === total - 1}
-            className="min-h-11 rounded-md border border-zinc-400 px-3 text-sm font-medium aria-disabled:opacity-50 dark:border-zinc-600"
+            className={BOTON_CHICO}
           >
             Foto siguiente
           </button>
@@ -353,7 +355,7 @@ function FotosReporte({
         href={foto.completa}
         target="_blank"
         rel="noopener noreferrer"
-        className="self-start text-sm font-medium underline"
+        className={`${ENLACE} self-start text-sm`}
       >
         Abrir foto completa
         <span className="sr-only">

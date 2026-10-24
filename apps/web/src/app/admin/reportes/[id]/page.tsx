@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
+import { tituloPagina } from "@/lib/marca";
 import { ordenDeCategoria } from "@/lib/reportes/categorias";
 import { formatearFecha, NOMBRE_MODERACION } from "@/lib/reportes/presentacion";
 
@@ -12,7 +13,7 @@ import { ENLACE_PELIGRO } from "../estilos";
 import { FormularioEdicion } from "./formulario-edicion";
 
 export const metadata: Metadata = {
-  title: "Editar reporte · Coquimbo Avisos",
+  title: tituloPagina("Editar reporte"),
   robots: { index: false },
 };
 

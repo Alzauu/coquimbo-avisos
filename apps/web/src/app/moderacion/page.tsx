@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 
 import { esModerador } from "@/lib/auth/rol";
+import { tituloPagina } from "@/lib/marca";
 import { formatearFecha } from "@/lib/reportes/presentacion";
 import { createClient } from "@/lib/supabase/server";
 
@@ -11,7 +12,7 @@ import { AvisoModeracion } from "./aviso-moderacion";
 import { ListaPendientes, type Pendiente } from "./lista-pendientes";
 
 export const metadata: Metadata = {
-  title: "Moderación · Coquimbo Avisos",
+  title: tituloPagina("Moderación"),
   robots: { index: false },
 };
 

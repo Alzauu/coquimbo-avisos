@@ -10,6 +10,7 @@ import {
   POR_PAGINA,
   TODAS_LAS_MODERACIONES,
 } from "@/lib/admin/filtros";
+import { tituloPagina } from "@/lib/marca";
 import { ordenDeCategoria } from "@/lib/reportes/categorias";
 import {
   ESTADOS_PUBLICOS,
@@ -29,7 +30,7 @@ import {
 import { FormArchivo } from "./formularios";
 
 export const metadata: Metadata = {
-  title: "Administración de reportes · Coquimbo Avisos",
+  title: tituloPagina("Administración de reportes"),
   robots: { index: false },
 };
 

@@ -1,4 +1,5 @@
 import { FichaCategoria } from "@/components/categorias/ficha-categoria";
+import { FOCO } from "@/components/ui/estilos";
 import { categoriaDe } from "@/lib/reportes/categorias";
 import {
   type Categoria,
@@ -6,6 +7,8 @@ import {
   ESTADOS_PUBLICOS,
   NOMBRE_ESTADO,
 } from "@/lib/reportes/presentacion";
+
+const CASILLA = `size-4 shrink-0 accent-(--tinta) ${FOCO}`;
 
 type Props = {
   // Solo las activas, en el orden del catálogo.
@@ -28,17 +31,17 @@ export function FiltrosReportes({
   return (
     <div className="flex flex-col gap-4">
       <fieldset className="flex flex-col gap-1">
-        <legend className="mb-1 font-medium">Categoría</legend>
+        <legend className="mb-1 font-semibold">Categoría</legend>
         {categorias.map((categoria) => (
           <label
             key={categoria.id}
-            className="flex min-h-9 cursor-pointer items-center gap-2"
+            className="flex min-h-10 cursor-pointer items-center gap-2"
           >
             <input
               type="checkbox"
               checked={categoriasMarcadas.has(categoria.id)}
               onChange={() => onCambiarCategoria(categoria.id)}
-              className="size-4"
+              className={CASILLA}
             />
             <FichaCategoria
               categoria={categoriaDe(categoria.codigo)}
@@ -50,17 +53,17 @@ export function FiltrosReportes({
       </fieldset>
 
       <fieldset className="flex flex-col gap-1">
-        <legend className="mb-1 font-medium">Estado</legend>
+        <legend className="mb-1 font-semibold">Estado</legend>
         {ESTADOS_PUBLICOS.map((estado) => (
           <label
             key={estado}
-            className="flex min-h-9 cursor-pointer items-center gap-2"
+            className="flex min-h-10 cursor-pointer items-center gap-2"
           >
             <input
               type="checkbox"
               checked={estadosMarcados.has(estado)}
               onChange={() => onCambiarEstado(estado)}
-              className="size-4"
+              className={CASILLA}
             />
             {NOMBRE_ESTADO[estado]}
           </label>
