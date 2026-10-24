@@ -6,6 +6,7 @@ import { cerrarSesion } from "@/app/auth/acciones";
 import {
   BOTON_SECUNDARIO,
   ENLACE,
+  PAGINA,
   TARJETA,
   TEXTO_ERROR,
   TITULO_PAGINA,
@@ -22,8 +23,10 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-const NOMBRE_ROL: Record<Database["public"]["Enums"]["rol_usuario"], string> = {
-  ciudadano: "Vecino/a",
+// Solo se muestra un rol con permisos extra: a un vecino no le dice nada.
+const NOMBRE_ROL: Partial<
+  Record<Database["public"]["Enums"]["rol_usuario"], string>
+> = {
   moderador: "Moderador/a",
   admin: "Administrador/a",
 };
@@ -43,7 +46,7 @@ export default async function PerfilPage() {
     .single();
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-4 py-8">
+    <main className={PAGINA}>
       <div className="flex flex-col gap-2">
         <Link href="/" className={`${ENLACE} self-start text-sm`}>
           Volver al mapa
@@ -62,8 +65,12 @@ export default async function PerfilPage() {
           >
             <dt className="font-semibold">Correo</dt>
             <dd className="break-all">{claims.email}</dd>
-            <dt className="font-semibold">Rol</dt>
-            <dd>{NOMBRE_ROL[perfil.rol]}</dd>
+            {NOMBRE_ROL[perfil.rol] && (
+              <>
+                <dt className="font-semibold">Rol</dt>
+                <dd>{NOMBRE_ROL[perfil.rol]}</dd>
+              </>
+            )}
           </dl>
 
           <FormularioNombre nombreActual={perfil.nombre_visible ?? ""} />

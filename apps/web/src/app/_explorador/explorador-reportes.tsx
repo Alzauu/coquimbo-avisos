@@ -98,9 +98,11 @@ export function ExploradorReportes({
   // Dónde estaba el foco al abrir la tarjeta, para devolverlo al cerrarla.
   const origenFoco = useRef<HTMLElement | null>(null);
   const contenedorMapa = useRef<HTMLDivElement>(null);
-  const [destino, setDestino] = useState<{ lng: number; lat: number } | null>(
-    null,
-  );
+  const [destino, setDestino] = useState<{
+    id: string;
+    lng: number;
+    lat: number;
+  } | null>(null);
   const [panelAbierto, setPanelAbierto] = useState(false);
 
   const consulta = useMemo<Consulta>(
@@ -178,7 +180,11 @@ export function ExploradorReportes({
     }
     recordarFoco();
     setSeleccionado(reporte);
-    setDestino({ lng: reporte.longitud, lat: reporte.latitud });
+    setDestino({
+      id: reporte.id,
+      lng: reporte.longitud,
+      lat: reporte.latitud,
+    });
   }
 
   const filtrosActivos =

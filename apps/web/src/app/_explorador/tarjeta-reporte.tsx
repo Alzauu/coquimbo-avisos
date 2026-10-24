@@ -50,7 +50,8 @@ type Props = {
 
 // Resumen de un reporte elegido en el mapa o en la lista. Diálogo no
 // modal: el mapa y la lista siguen disponibles. En el teléfono es una hoja
-// abajo; desde md, arriba a la derecha (la lista va a la izquierda), con
+// abajo (si cambias su alto máximo, ajusta ALTO_TARJETA_TELEFONO en
+// mapa-reportes.tsx); desde md, arriba a la derecha (la lista va a la izquierda), con
 // espacio para los botones de zoom. Se monta de nuevo para
 // cada reporte (key), así que su estado parte de cero.
 export function TarjetaReporte({

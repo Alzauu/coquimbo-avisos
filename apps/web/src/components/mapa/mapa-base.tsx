@@ -3,7 +3,13 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { Map as MapaLibre, NavigationControl, setWorkerUrl } from "maplibre-gl";
-import { type RefObject, useEffect, useRef, useState } from "react";
+import {
+  type RefObject,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 // Configuración común de los mapas de la app (MapTiler + MapLibre).
 
@@ -30,13 +36,54 @@ type OpcionesMapa = {
   zoom: number;
 };
 
-// Crea el mapa una sola vez con las opciones iniciales y lo entrega cuando
-// termina de cargar el estilo; antes de eso `mapa` es null.
+// El mapa sigue el tema de la página: el atributo data-theme de <html> si
+// lo fuerza, y si no, el del sistema (igual que globals.css).
+const CONSULTA_OSCURO = "(prefers-color-scheme: dark)";
+
+function suscribirTema(aviso: () => void) {
+  const consulta = window.matchMedia(CONSULTA_OSCURO);
+  consulta.addEventListener("change", aviso);
+  const observador = new MutationObserver(aviso);
+  observador.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  return () => {
+    consulta.removeEventListener("change", aviso);
+    observador.disconnect();
+  };
+}
+
+function temaOscuro() {
+  const forzado = document.documentElement.dataset.theme;
+  if (forzado === "dark" || forzado === "light") return forzado === "dark";
+  return window.matchMedia(CONSULTA_OSCURO).matches;
+}
+
+// Los dos estilos usan los mismos datos (maptiler_planet): solo cambian
+// colores e íconos.
+const urlEstilo = (oscuro: boolean, clave: string) =>
+  `https://api.maptiler.com/maps/${oscuro ? "streets-v2-dark" : "streets-v2"}/style.json?key=${encodeURIComponent(clave)}`;
+
+// Crea el mapa con las opciones iniciales y lo entrega cuando termina de
+// cargar el estilo; antes de eso `mapa` es null. Si cambia el tema, crea
+// otro en la misma posición: las capas propias se vuelven a agregar (los
+// efectos dependen de `mapa`) con los colores de ese tema (`oscuro`, que
+// cambia junto con `mapa`).
 export function useMapa(opciones: OpcionesMapa) {
   const contenedor = useRef<HTMLDivElement>(null);
-  const [mapa, setMapa] = useState<MapaLibre | null>(null);
+  const [listo, setListo] = useState<{
+    mapa: MapaLibre;
+    oscuro: boolean;
+  } | null>(null);
   const [falloCarga, setFalloCarga] = useState(false);
   const [iniciales] = useState(opciones);
+  // Los mapas solo se dibujan en el navegador (sin prerender).
+  const oscuro = useSyncExternalStore(suscribirTema, temaOscuro, () => false);
+  // Última posición, para no perderla al cambiar de tema.
+  const camara = useRef<{ centro: [number, number]; zoom: number } | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!CLAVE_MAPTILER || !contenedor.current) return;
@@ -45,9 +92,9 @@ export function useMapa(opciones: OpcionesMapa) {
     try {
       nuevo = new MapaLibre({
         container: contenedor.current,
-        style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${encodeURIComponent(CLAVE_MAPTILER)}`,
-        center: iniciales.centro,
-        zoom: iniciales.zoom,
+        style: urlEstilo(oscuro, CLAVE_MAPTILER),
+        center: camara.current?.centro ?? iniciales.centro,
+        zoom: camara.current?.zoom ?? iniciales.zoom,
         // Créditos de MapTiler y OpenStreetMap siempre visibles.
         attributionControl: { compact: false },
         locale: { ...TEXTOS_CONTROLES, "Map.Title": iniciales.titulo },
@@ -68,7 +115,11 @@ export function useMapa(opciones: OpcionesMapa) {
       if (!nuevo.hasImage(id)) nuevo.addImage(id, IMAGEN_VACIA);
     });
 
-    nuevo.on("load", () => setMapa(nuevo));
+    nuevo.on("load", () => setListo({ mapa: nuevo, oscuro }));
+    nuevo.on("moveend", () => {
+      const { lng, lat } = nuevo.getCenter();
+      camara.current = { centro: [lng, lat], zoom: nuevo.getZoom() };
+    });
 
     // Sin estilo (clave inválida, sin conexión) el mapa queda en blanco.
     nuevo.on("error", (evento) => {
@@ -78,11 +129,16 @@ export function useMapa(opciones: OpcionesMapa) {
 
     return () => {
       nuevo.remove();
-      setMapa(null);
+      setListo(null);
     };
-  }, [iniciales]);
+  }, [iniciales, oscuro]);
 
-  return { contenedor, mapa, falloCarga };
+  return {
+    contenedor,
+    mapa: listo?.mapa ?? null,
+    oscuro: listo?.oscuro ?? oscuro,
+    falloCarga,
+  };
 }
 
 type PropsMarco = {

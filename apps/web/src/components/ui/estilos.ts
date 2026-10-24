@@ -22,7 +22,8 @@ export const TARJETA =
 
 export const TITULO_PAGINA = "text-2xl font-bold tracking-tight";
 
-export const TITULO_SECCION = "text-lg font-bold tracking-tight";
+// Un paso más grande que las etiquetas de campo (16 px, semibold).
+export const TITULO_SECCION = "text-xl font-bold tracking-tight";
 
 export const TEXTO_SUAVE = "text-(--tinta-suave)";
 

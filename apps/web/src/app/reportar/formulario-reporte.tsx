@@ -51,15 +51,6 @@ const ESTADO_INICIAL: EstadoFormulario = { estado: "inicial" };
 // Las secciones van separadas por una línea, sin tarjetas.
 const SECCION = "border-t border-(--borde) pt-5";
 
-const ETIQUETA_CAMPO: Record<CampoReporte, string> = {
-  categoria_id: "Categoría",
-  titulo: "Título",
-  descripcion: "Descripción",
-  direccion_referencia: "Referencia",
-  ubicacion: "Ubicación",
-  fotos: "Fotos",
-};
-
 // Destino del enlace de cada error en el resumen.
 const ID_CAMPO: Record<CampoReporte, string> = {
   categoria_id: "categoria_id",
@@ -78,10 +69,6 @@ const ERRORES_UBICACION: Record<number, string> = {
 
 type Categoria = { id: number; codigo: string; nombre: string };
 type Problema = { mensaje: string; errores: ErroresReporte };
-
-const formatoCoordenada = new Intl.NumberFormat("es-CL", {
-  maximumFractionDigits: 5,
-});
 
 export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
   const [estado, accion, enviando] = useActionState(
@@ -195,13 +182,14 @@ export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
           className={`${AVISO_ERROR} ${FOCO}`}
         >
           <p className={TEXTO_ERROR}>{problema.mensaje}</p>
+          {/* Cada mensaje ya nombra su campo («El título debe…»). */}
           {Object.keys(problema.errores).length > 0 && (
             <ul className="mt-2 list-disc pl-5">
               {(Object.keys(problema.errores) as CampoReporte[]).map(
                 (campo) => (
                   <li key={campo}>
                     <a href={`#${ID_CAMPO[campo]}`} className={ENLACE}>
-                      {ETIQUETA_CAMPO[campo]}: {problema.errores[campo]}
+                      {problema.errores[campo]}
                     </a>
                   </li>
                 ),
@@ -236,8 +224,7 @@ export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
           Usar mi ubicación
         </button>
         <p className={`text-sm ${TEXTO_SUAVE}`}>
-          Punto elegido: {formatoCoordenada.format(ubicacion.latitud)},{" "}
-          {formatoCoordenada.format(ubicacion.longitud)}
+          Ubicación marcada en el mapa <span aria-hidden="true">✓</span>
         </p>
         <div aria-live="polite" className="flex flex-col gap-1 text-sm">
           {avisoUbicacion && <p>{avisoUbicacion}</p>}
@@ -276,7 +263,7 @@ export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
             {categorias.map((categoria) => (
               <label
                 key={categoria.id}
-                className="flex min-h-12 cursor-pointer items-center gap-2 rounded-(--radio-control) border-2 border-(--borde) bg-(--superficie) px-3 py-2 has-[:checked]:border-(--tinta) has-[:checked]:bg-(--superficie-2) has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-(--foco)"
+                className="flex min-h-12 cursor-pointer items-center gap-2 rounded-(--radio-control) border-2 border-(--borde-control) bg-(--superficie) px-3 py-2 has-[:checked]:border-(--tinta) has-[:checked]:bg-(--superficie-2) has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-(--foco)"
               >
                 <input
                   type="radio"

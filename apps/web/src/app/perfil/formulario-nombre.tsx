@@ -27,7 +27,8 @@ export function FormularioNombre({ nombreActual }: { nombreActual: string }) {
           Nombre visible
         </label>
         <p id="ayuda-nombre" className={`text-sm ${TEXTO_SUAVE}`}>
-          Es el nombre que verán otras personas. Entre 2 y 50 caracteres.
+          Es el nombre con que te saludamos. Tus reportes se publican sin tu
+          nombre. Entre 2 y 50 caracteres.
         </p>
         <input
           id="nombre_visible"

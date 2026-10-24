@@ -96,16 +96,29 @@ export default async function MisReportesPage({
         </div>
       )}
 
-      <Link href="/reportar" className={`${BOTON_PRINCIPAL} self-start`}>
-        Reportar un problema
-      </Link>
+      {/* Sin reportes, el botón va después del mensaje (estado vacío). */}
+      {!error && reportes && reportes.length > 0 && (
+        <Link href="/reportar" className={`${BOTON_PRINCIPAL} self-start`}>
+          Reportar un problema
+        </Link>
+      )}
 
       {error ? (
         <p role="alert" className={TEXTO_ERROR}>
           No pudimos cargar tus reportes. Inténtalo de nuevo más tarde.
         </p>
       ) : !reportes || reportes.length === 0 ? (
-        <p className={TEXTO_SUAVE}>Todavía no has enviado reportes.</p>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold">Todavía no has enviado reportes.</p>
+            <p className={TEXTO_SUAVE}>
+              Cuando envíes uno, aquí verás si fue aprobado y en qué estado va.
+            </p>
+          </div>
+          <Link href="/reportar" className={`${BOTON_PRINCIPAL} self-start`}>
+            Reportar un problema
+          </Link>
+        </div>
       ) : (
         <ul className="flex flex-col gap-4">
           {reportes.map((reporte) => (

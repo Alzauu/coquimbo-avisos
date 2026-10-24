@@ -235,12 +235,15 @@ function RevisaTuCorreo({
           disabled={!puedeReenviar}
           className={BOTON_SECUNDARIO}
         >
-          {reenviando
-            ? "Enviando…"
-            : restante > 0
-              ? `Puedes pedir otro en ${formatoEspera(restante)}`
-              : "Reenviar enlace"}
+          {reenviando ? "Enviando…" : "Reenviar enlace"}
         </button>
+        {/* La espera va fuera del botón (deshabilitado, más tenue) y fuera
+            de la región viva: no se anuncia cada segundo. */}
+        {restante > 0 && !reenviando && (
+          <p className={`text-sm tabular-nums ${TEXTO_SUAVE}`}>
+            Podrás pedir otro en {formatoEspera(restante)}.
+          </p>
+        )}
         {/* Se anuncia el resultado y el final de la espera, no cada
             segundo. */}
         <p aria-live="polite" className="text-sm">

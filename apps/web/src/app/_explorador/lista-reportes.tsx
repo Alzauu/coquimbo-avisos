@@ -43,8 +43,12 @@ export function ListaReportes({
           <li
             key={reporte.id}
             ref={elegido ? seleccionado : undefined}
-            className={`rounded-(--radio-control) border-2 bg-(--superficie) ${
-              elegido ? "border-(--tinta)" : "border-(--borde)"
+            // Borde de control (3:1): se ve dónde tocar también en oscuro.
+            // El elegido se distingue además por el fondo.
+            className={`rounded-(--radio-control) border-2 ${
+              elegido
+                ? "border-(--tinta) bg-(--superficie-2)"
+                : "border-(--borde-control) bg-(--superficie)"
             }`}
           >
             <button

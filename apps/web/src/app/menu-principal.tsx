@@ -45,9 +45,25 @@ export function MenuPrincipal({ enlaces }: { enlaces: EnlaceMenu[] }) {
         aria-expanded={abierto}
         aria-controls="menu-principal"
         onClick={() => setAbierto((actual) => !actual)}
-        className={`inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-(--superficie-2) ${FOCO}`}
+        className={`group inline-flex min-h-11 items-center gap-1 rounded-full px-3 text-sm font-semibold hover:bg-(--superficie-2) ${FOCO}`}
       >
         Menú
+        {/* Indica que despliega; gira al abrirse. */}
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="group-aria-expanded:rotate-180 motion-safe:transition-transform"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
       </button>
       <nav
         id="menu-principal"

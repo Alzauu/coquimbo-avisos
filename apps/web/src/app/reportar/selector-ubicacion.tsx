@@ -67,7 +67,8 @@ export default function SelectorUbicacion({
   );
 }
 
-// La punta del pin queda exactamente en el centro del mapa.
+// La punta del pin queda exactamente en el centro del mapa. Usa los
+// colores del tema, no rojo: en el mapa el rojo es de los cortes de luz.
 function PinCentral() {
   return (
     <div
@@ -77,11 +78,11 @@ function PinCentral() {
       <svg width="36" height="48" viewBox="0 0 36 48" className="drop-shadow">
         <path
           d="M18 47C18 47 34 29.5 34 18A16 16 0 0 0 2 18C2 29.5 18 47 18 47Z"
-          fill="#b91c1c"
-          stroke="#ffffff"
+          fill="var(--tinta)"
+          stroke="var(--superficie)"
           strokeWidth="2"
         />
-        <circle cx="18" cy="18" r="6" fill="#ffffff" />
+        <circle cx="18" cy="18" r="6" fill="var(--superficie)" />
       </svg>
     </div>
   );

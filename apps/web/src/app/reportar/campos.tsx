@@ -74,14 +74,15 @@ export function CampoTexto({
       ) : (
         <input type="text" {...propiedades} />
       )}
+      {/* El error va pegado al campo, antes del contador. */}
+      <ErrorCampo campo={campo} errores={errores} />
       <p
         id={`contador-${campo}`}
-        className={`text-sm ${usados > maximo ? TEXTO_ERROR : TEXTO_SUAVE}`}
+        className={`text-sm tabular-nums ${usados > maximo ? TEXTO_ERROR : TEXTO_SUAVE}`}
       >
         {usados} de {maximo} caracteres
         {usados > maximo && ` (te pasaste por ${usados - maximo})`}
       </p>
-      <ErrorCampo campo={campo} errores={errores} />
     </div>
   );
 }

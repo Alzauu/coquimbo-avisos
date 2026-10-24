@@ -25,9 +25,29 @@ const CAPA_CONTEO = "reportes-conteo";
 const CAPA_PUNTOS = "reportes-puntos";
 const CAPA_SELECCION = "reportes-seleccion";
 
-// Por sobre este zoom no se agrupa: al elegir un reporte se acerca más.
+// Por sobre este zoom no se agrupa: si el reporte elegido en la lista está
+// dentro de un grupo, se acerca hasta aquí.
 const ZOOM_MAX_GRUPOS = 15;
 const ZOOM_REPORTE = 16;
+
+// Marca de los movimientos que hace la lista (no la persona): no cambian
+// la zona consultada, así la lista no se recalcula al elegir un reporte.
+const DESDE_LISTA = { desdeLista: true };
+
+// En el teléfono la tarjeta es una hoja abajo de hasta 65dvh (ver
+// tarjeta-reporte.tsx): el reporte elegido se centra en la franja de mapa
+// que queda visible sobre ella.
+const ALTO_TARJETA_TELEFONO = 0.65;
+const CONSULTA_ESCRITORIO = "(min-width: 48rem)"; // md de Tailwind
+
+function desplazamientoTarjeta(lienzo: HTMLCanvasElement): [number, number] {
+  if (window.matchMedia(CONSULTA_ESCRITORIO).matches) return [0, 0];
+  const visible = lienzo.clientHeight * (1 - ALTO_TARJETA_TELEFONO);
+  return [0, visible / 2 - lienzo.clientHeight / 2];
+}
+
+// Anillo del reporte elegido (3:1 sobre el mapa claro y el oscuro).
+const COLOR_SELECCION = { claro: "#111827", oscuro: "#f8fafc" };
 
 // Cortes de luz de CGE (tabla cortes_luz, la llena scripts/cge_cortes.py
 // cada minuto): el área afectada en rojo, como en el mapa de CGE, y un
@@ -37,7 +57,12 @@ const FUENTE_CORTES = "cortes-luz";
 const CAPA_CORTES_RELLENO = "cortes-luz-relleno";
 const CAPA_CORTES_BORDE = "cortes-luz-borde";
 const CAPA_CORTES_PUNTOS = "cortes-luz-puntos";
-const COLOR_CORTE = "#dc2626";
+const CAPA_CORTES_CONTORNO = "cortes-luz-contorno";
+// En el mapa oscuro el rojo se aclara (#dc2626 da 2,4:1 sobre su fondo) y
+// el borde va sobre un contorno oscuro: así llega a 3:1 también sobre
+// edificios y calles, que en ese mapa son más claros.
+const COLOR_CORTE = { claro: "#dc2626", oscuro: "#f87171" };
+const COLOR_CONTORNO_CORTE = "#0e1013";
 const INTERVALO_CORTES_MS = 60_000;
 const MAX_CORTES = 2000;
 
@@ -181,8 +206,8 @@ type Props = {
   // de Otros.
   codigoPorCategoria: ReadonlyMap<number, string>;
   seleccionadoId: string | null;
-  // Cada objeto nuevo mueve el mapa a ese punto (al elegir en la lista).
-  destino: { lng: number; lat: number } | null;
+  // Cada objeto nuevo centra el mapa en ese reporte (al elegir en la lista).
+  destino: { id: string; lng: number; lat: number } | null;
   onSeleccionar: (id: string) => void;
   onCambioZona: (zona: Zona) => void;
 };
@@ -195,7 +220,7 @@ export default function MapaReportes({
   onSeleccionar,
   onCambioZona,
 }: Props) {
-  const { contenedor, mapa, falloCarga } = useMapa({
+  const { contenedor, mapa, oscuro, falloCarga } = useMapa({
     titulo: "Mapa de reportes",
     centro: CENTRO_LA_SERENA,
     zoom: 12.5,
@@ -207,9 +232,13 @@ export default function MapaReportes({
   useEffect(() => {
     callbacks.current = { onSeleccionar, onCambioZona };
   });
+  // La zona inicial se avisa una sola vez: al cambiar de tema el mapa se
+  // crea de nuevo y eso no debe recalcular la lista.
+  const zonaInicialAvisada = useRef(false);
 
   useEffect(() => {
     if (!mapa) return;
+    const tema = oscuro ? "oscuro" : "claro";
 
     // Primero los cortes: las capas que se agregan después quedan encima.
     mapa.addSource(FUENTE_CORTES, {
@@ -221,14 +250,23 @@ export default function MapaReportes({
       type: "fill",
       source: FUENTE_CORTES,
       filter: ES_AREA,
-      paint: { "fill-color": COLOR_CORTE, "fill-opacity": 0.4 },
+      paint: { "fill-color": COLOR_CORTE[tema], "fill-opacity": 0.4 },
     });
+    if (oscuro) {
+      mapa.addLayer({
+        id: CAPA_CORTES_CONTORNO,
+        type: "line",
+        source: FUENTE_CORTES,
+        filter: ES_AREA,
+        paint: { "line-color": COLOR_CONTORNO_CORTE, "line-width": 5 },
+      });
+    }
     mapa.addLayer({
       id: CAPA_CORTES_BORDE,
       type: "line",
       source: FUENTE_CORTES,
       filter: ES_AREA,
-      paint: { "line-color": COLOR_CORTE, "line-width": 2 },
+      paint: { "line-color": COLOR_CORTE[tema], "line-width": 2 },
     });
     mapa.addLayer({
       id: CAPA_CORTES_PUNTOS,
@@ -236,7 +274,7 @@ export default function MapaReportes({
       source: FUENTE_CORTES,
       filter: ES_PUNTO,
       paint: {
-        "circle-color": COLOR_CORTE,
+        "circle-color": COLOR_CORTE[tema],
         "circle-radius": 6,
         "circle-stroke-color": "#ffffff",
         "circle-stroke-width": 2,
@@ -300,7 +338,7 @@ export default function MapaReportes({
         "circle-color": "transparent",
         // Rodea la ficha de 28 px.
         "circle-radius": 18,
-        "circle-stroke-color": "#111827",
+        "circle-stroke-color": COLOR_SELECCION[tema],
         "circle-stroke-width": 3,
       },
     });
@@ -372,13 +410,18 @@ export default function MapaReportes({
         );
       }, 250);
     };
-    mapa.on("moveend", avisarZona);
-    avisarZona();
+    mapa.on("moveend", (evento) => {
+      if (!(evento as { desdeLista?: boolean }).desdeLista) avisarZona();
+    });
+    if (!zonaInicialAvisada.current) {
+      zonaInicialAvisada.current = true;
+      avisarZona();
+    }
 
     // El mapa se destruye junto con el componente (useMapa); aquí solo se
     // cancela el aviso pendiente.
     return () => clearTimeout(espera);
-  }, [mapa]);
+  }, [mapa, oscuro]);
 
   useEffect(() => {
     mapa
@@ -437,12 +480,39 @@ export default function MapaReportes({
     ]);
   }, [mapa, seleccionadoId]);
 
+  // Centra el reporte elegido en la lista sin cambiar el zoom. Si al
+  // terminar no se dibuja suelto (está dentro de un grupo), acerca hasta
+  // que se separe.
   useEffect(() => {
     if (!mapa || !destino) return;
-    mapa.easeTo({
-      center: [destino.lng, destino.lat],
-      zoom: Math.max(mapa.getZoom(), ZOOM_REPORTE),
-    });
+    const centro: [number, number] = [destino.lng, destino.lat];
+    const lienzo = mapa.getCanvas();
+    const offset = desplazamientoTarjeta(lienzo);
+    const revisarGrupo = () => {
+      // Si la persona movió el mapa mientras tanto, no se acerca.
+      const punto = mapa.project(centro);
+      const enElCentro =
+        Math.abs(punto.x - (lienzo.clientWidth / 2 + offset[0])) < 2 &&
+        Math.abs(punto.y - (lienzo.clientHeight / 2 + offset[1])) < 2;
+      const suelto =
+        mapa.querySourceFeatures(FUENTE, {
+          filter: ["==", ["get", "id"], destino.id],
+        }).length > 0;
+      if (enElCentro && !suelto) {
+        mapa.easeTo(
+          { center: centro, zoom: ZOOM_REPORTE, offset },
+          DESDE_LISTA,
+        );
+      }
+    };
+    const alTerminar = () => mapa.once("idle", revisarGrupo);
+
+    mapa.once("moveend", alTerminar);
+    mapa.easeTo({ center: centro, offset }, DESDE_LISTA);
+    return () => {
+      mapa.off("moveend", alTerminar);
+      mapa.off("idle", revisarGrupo);
+    };
   }, [mapa, destino]);
 
   return (
