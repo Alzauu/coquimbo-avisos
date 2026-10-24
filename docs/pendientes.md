@@ -22,11 +22,11 @@ Tareas acordadas que quedaron fuera de un cambio y no deben olvidarse.
   y guardar la elección en una cookie, para que el servidor ponga el
   atributo y la página no parpadee al cargar.
 - **Terminar de pasar las páginas a las variables de diseño.** La portada,
-  reportar, ingreso, Mis reportes y perfil usan las variables de
-  `globals.css` y las clases de `components/ui/estilos.ts`. El detalle de
-  un reporte (`/reporte/[id]`), administración y moderación solo recibieron
-  los botones y campos comunes; el resto sigue con clases `zinc-*` y
-  `dark:` (que respetan `data-theme`).
+  reportar, ingreso, Mis reportes, perfil y moderación (también su sección
+  en `/reporte/[id]`) usan las variables de `globals.css` y las clases de
+  `components/ui/estilos.ts`. El resto del detalle de un reporte y
+  administración solo recibieron los botones y campos comunes; siguen con
+  clases `zinc-*`, `red-*` y `dark:` (que respetan `data-theme`).
 - **Logo definitivo.** `components/marca/logo.tsx` es provisorio, igual que
   el nombre en `lib/marca.ts`.
 
@@ -39,6 +39,12 @@ Tareas acordadas que quedaron fuera de un cambio y no deben olvidarse.
   `v_obras_vigentes`) existen, pero no hay pantallas para crearlas,
   editarlas ni cerrarlas. Para cortes de luz y agua, solo avisos públicos
   cargados a mano y citando la fuente (ver CLAUDE.md).
+- **Mostrar las fotos en el editor de administración.** El editor solo
+  dice cuántas fotos hay. Para verlas, una migración debe entregar a los
+  admins las fotos del reporte (id, orden, oculta y ruta, o mejor una URL
+  firmada desde el servidor), porque `reporte_fotos.ruta` no se puede leer
+  con la sesión y `obtener_reporte_admin` solo devuelve el conteo. Hoy se
+  ven en Moderación (si está pendiente) o en el detalle público.
 - **Ver el registro de eliminaciones y el historial desde la app.**
   `reportes_eliminados` y `reporte_historial` solo se consultan en el SQL
   Editor; falta una vista de solo lectura para admins.

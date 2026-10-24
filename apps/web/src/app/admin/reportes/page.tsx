@@ -21,13 +21,7 @@ import {
 
 import { clienteAdmin } from "./acceso";
 import { AvisoAdmin } from "./aviso-admin";
-import {
-  BOTON_PRINCIPAL,
-  BOTON_SECUNDARIO,
-  CAMPO,
-  ENLACE_PELIGRO,
-} from "./estilos";
-import { FormArchivo } from "./formularios";
+import { BOTON_PRINCIPAL, BOTON_SECUNDARIO, CAMPO } from "./estilos";
 
 export const metadata: Metadata = {
   title: tituloPagina("Administración de reportes"),
@@ -201,21 +195,62 @@ export default async function AdminReportesPage({
           <p>No hay reportes con estos filtros.</p>
         )
       ) : (
-        <section aria-labelledby="titulo-tabla" className="flex flex-col gap-3">
+        // min-w-0: sin él, el ancho mínimo de la tabla ensancha la página
+        // en pantallas angostas (desplazamiento horizontal).
+        <section
+          aria-labelledby="titulo-tabla"
+          className="flex min-w-0 flex-col gap-3"
+        >
           <p className="text-sm text-zinc-700 dark:text-zinc-300">
             {total === 1 ? "1 reporte" : `${total} reportes`}
             {paginas > 1 && ` · página ${filtros.pagina} de ${paginas}`}
           </p>
 
-          {/* En pantallas angostas la tabla se desplaza hacia el lado; la
-              región se puede enfocar para hacerlo con el teclado. */}
+          {/* En el teléfono, una lista: cada reporte en un bloque, sin
+              desplazamiento hacia el lado. Archivar y eliminar están en el
+              editor. */}
+          <ul className="flex flex-col gap-3 sm:hidden">
+            {reportes.map((reporte) => (
+              <li
+                key={reporte.id}
+                className="flex flex-col gap-2 rounded-md border border-zinc-300 p-3 dark:border-zinc-700"
+              >
+                <p className="font-medium break-words">{reporte.titulo}</p>
+                <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                  {nombreCategoria.get(reporte.categoria_id) ?? "Sin categoría"}
+                  {reporte.fotos > 0 &&
+                    ` · ${reporte.fotos === 1 ? "1 foto" : `${reporte.fotos} fotos`}`}
+                  {reporte.direccion_referencia &&
+                    ` · ${reporte.direccion_referencia}`}
+                </p>
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                  <dt className="font-medium">Moderación</dt>
+                  <dd>{NOMBRE_MODERACION[reporte.moderacion]}</dd>
+                  <dt className="font-medium">Estado</dt>
+                  <dd>{NOMBRE_ESTADO[reporte.estado]}</dd>
+                  <dt className="font-medium">Creado</dt>
+                  <dd>{formatearFecha(reporte.creado_en)}</dd>
+                </dl>
+                <Link
+                  href={`/admin/reportes/${reporte.id}`}
+                  className={`${BOTON_SECUNDARIO} self-start`}
+                >
+                  Editar
+                  <span className="sr-only"> «{reporte.titulo}»</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          {/* Desde sm, la tabla. Si aun así no cabe, se desplaza dentro de
+              su región, que se puede enfocar para hacerlo con el teclado. */}
           <div
             role="region"
             aria-labelledby="titulo-tabla"
             tabIndex={0}
-            className="overflow-x-auto rounded-md border border-zinc-300 dark:border-zinc-700"
+            className="hidden overflow-x-auto rounded-md border border-zinc-300 sm:block dark:border-zinc-700"
           >
-            <table className="w-full min-w-[44rem] border-collapse text-left text-sm">
+            <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
               <caption id="titulo-tabla" className="sr-only">
                 Reportes
                 {paginas > 1 && `, página ${filtros.pagina} de ${paginas}`}
@@ -235,69 +270,50 @@ export default async function AdminReportesPage({
                     Creado
                   </th>
                   <th scope="col" className="p-3">
-                    Acciones
+                    <span className="sr-only">Acciones</span>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {reportes.map((reporte) => {
-                  const archivado = reporte.moderacion === "archivado";
-                  return (
-                    <tr
-                      key={reporte.id}
-                      className="border-t border-zinc-300 align-top dark:border-zinc-700"
-                    >
-                      <th scope="row" className="p-3 font-normal">
-                        <span className="block font-medium break-words">
-                          {reporte.titulo}
+                {reportes.map((reporte) => (
+                  <tr
+                    key={reporte.id}
+                    className="border-t border-zinc-300 align-top dark:border-zinc-700"
+                  >
+                    <th scope="row" className="p-3 font-normal">
+                      <span className="block font-medium break-words">
+                        {reporte.titulo}
+                      </span>
+                      <span className="block text-zinc-700 dark:text-zinc-300">
+                        {nombreCategoria.get(reporte.categoria_id) ??
+                          "Sin categoría"}
+                        {reporte.fotos > 0 &&
+                          ` · ${reporte.fotos === 1 ? "1 foto" : `${reporte.fotos} fotos`}`}
+                      </span>
+                      {reporte.direccion_referencia && (
+                        <span className="block break-words text-zinc-600 dark:text-zinc-400">
+                          {reporte.direccion_referencia}
                         </span>
-                        <span className="block text-zinc-700 dark:text-zinc-300">
-                          {nombreCategoria.get(reporte.categoria_id) ??
-                            "Sin categoría"}
-                          {reporte.fotos > 0 &&
-                            ` · ${reporte.fotos === 1 ? "1 foto" : `${reporte.fotos} fotos`}`}
-                        </span>
-                        {reporte.direccion_referencia && (
-                          <span className="block break-words text-zinc-600 dark:text-zinc-400">
-                            {reporte.direccion_referencia}
-                          </span>
-                        )}
-                      </th>
-                      <td className="p-3">
-                        {NOMBRE_MODERACION[reporte.moderacion]}
-                      </td>
-                      <td className="p-3">{NOMBRE_ESTADO[reporte.estado]}</td>
-                      <td className="p-3 whitespace-nowrap">
-                        {formatearFecha(reporte.creado_en)}
-                      </td>
-                      <td className="p-3">
-                        <div className="flex flex-wrap gap-2">
-                          <Link
-                            href={`/admin/reportes/${reporte.id}`}
-                            className={BOTON_SECUNDARIO}
-                          >
-                            Editar
-                            <span className="sr-only"> «{reporte.titulo}»</span>
-                          </Link>
-                          <FormArchivo
-                            key={`${reporte.id}-${reporte.moderacion}`}
-                            reporteId={reporte.id}
-                            titulo={reporte.titulo}
-                            archivado={archivado}
-                            volver={consulta}
-                          />
-                          <Link
-                            href={`/admin/reportes/${reporte.id}/eliminar`}
-                            className={ENLACE_PELIGRO}
-                          >
-                            Eliminar…
-                            <span className="sr-only"> «{reporte.titulo}»</span>
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                      )}
+                    </th>
+                    <td className="p-3">
+                      {NOMBRE_MODERACION[reporte.moderacion]}
+                    </td>
+                    <td className="p-3">{NOMBRE_ESTADO[reporte.estado]}</td>
+                    <td className="p-3 whitespace-nowrap">
+                      {formatearFecha(reporte.creado_en)}
+                    </td>
+                    <td className="p-3">
+                      <Link
+                        href={`/admin/reportes/${reporte.id}`}
+                        className={BOTON_SECUNDARIO}
+                      >
+                        Editar
+                        <span className="sr-only"> «{reporte.titulo}»</span>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

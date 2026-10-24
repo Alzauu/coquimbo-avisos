@@ -10,6 +10,7 @@ import {
   FormOcultarFoto,
   FormOcultarReporte,
 } from "@/app/moderacion/formularios";
+import { TARJETA, TEXTO_SUAVE } from "@/components/ui/estilos";
 import { esModerador } from "@/lib/auth/rol";
 import { urlFotoPublica } from "@/lib/fotos/servidor";
 import { tituloPagina } from "@/lib/marca";
@@ -174,13 +175,13 @@ export default async function ReportePage({
       {modera && (
         <section
           aria-labelledby="titulo-moderacion"
-          className="flex flex-col gap-4 rounded-md border border-zinc-400 p-4 dark:border-zinc-600"
+          className={`flex flex-col gap-4 p-4 ${TARJETA}`}
         >
           <div className="flex flex-col gap-1">
             <h2 id="titulo-moderacion" className="text-lg font-bold">
               Moderación
             </h2>
-            <p className="text-sm text-zinc-700 dark:text-zinc-300">
+            <p className={`text-sm ${TEXTO_SUAVE}`}>
               Solo moderadores y administradores ven esta sección. Para ocultar
               una foto usa el botón bajo cada foto.
             </p>

@@ -1,3 +1,4 @@
+import { AVISO_EXITO } from "@/components/ui/estilos";
 import { textoDeAviso } from "@/lib/moderacion/mensajes";
 
 // Aviso de éxito tras una acción de moderación (?aviso=<código>). Solo
@@ -6,10 +7,7 @@ export function AvisoModeracion({ codigo }: { codigo: unknown }) {
   const texto = textoDeAviso(codigo);
   if (!texto) return null;
   return (
-    <p
-      role="status"
-      className="rounded-md bg-green-50 p-4 font-medium text-green-900 dark:bg-green-950 dark:text-green-100"
-    >
+    <p role="status" className={`${AVISO_EXITO} font-semibold`}>
       {texto}
     </p>
   );

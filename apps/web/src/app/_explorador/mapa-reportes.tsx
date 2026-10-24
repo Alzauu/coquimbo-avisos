@@ -170,12 +170,13 @@ function cortesAGeoJSON(cortes: readonly CorteLuz[]): ColeccionCortes {
 function contenidoPopupCorte(propiedades: Record<string, unknown>) {
   const texto = (valor: unknown) => (typeof valor === "string" ? valor : "");
   const contenido = document.createElement("div");
-  contenido.style.color = "#18181b";
+  // Colores del tema (los del popup están en globals.css).
+  contenido.style.color = "var(--tinta)";
   contenido.style.maxWidth = "16rem";
 
   const titulo = document.createElement("p");
   titulo.style.fontWeight = "700";
-  titulo.style.paddingRight = "1.25rem"; // espacio para el botón Cerrar
+  titulo.style.paddingRight = "1.75rem"; // espacio para el botón Cerrar
   titulo.textContent = texto(propiedades.nombre) || "Corte de luz";
   contenido.append(titulo);
 
@@ -190,8 +191,8 @@ function contenidoPopupCorte(propiedades: Record<string, unknown>) {
 
   const fuente = document.createElement("p");
   fuente.style.marginTop = "0.5rem";
-  fuente.style.fontSize = "0.75rem";
-  fuente.style.color = "#52525b";
+  fuente.style.fontSize = "0.875rem";
+  fuente.style.color = "var(--tinta-suave)";
   const creado = Date.parse(texto(propiedades.creado_en));
   fuente.textContent = Number.isNaN(creado)
     ? "Fuente: CGE"

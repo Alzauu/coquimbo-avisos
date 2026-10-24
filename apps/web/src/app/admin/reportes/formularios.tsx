@@ -9,9 +9,9 @@ import {
 } from "./acciones";
 import { BOTON_SECUNDARIO } from "./estilos";
 
-// Archivar o restaurar desde la lista. Si resulta, la Server Action vuelve
-// a la misma página de la lista con un aviso; si falla, el error se
-// muestra junto al botón con role="alert".
+// Archivar o restaurar desde el editor. Si resulta, la Server Action vuelve
+// a la lista con un aviso; si falla, el error se muestra junto al botón
+// con role="alert".
 
 const INICIAL: EstadoAccion = { estado: "inicial" };
 
@@ -19,7 +19,7 @@ type Props = {
   reporteId: string;
   titulo: string;
   archivado: boolean;
-  // Consulta actual de la lista (filtros y página), para volver a ella.
+  // Filtros y página de la lista a la que se vuelve ("" para la inicial).
   volver: string;
 };
 
@@ -42,7 +42,6 @@ export function FormArchivo({ reporteId, titulo, archivado, volver }: Props) {
       <input type="hidden" name="volver" value={volver} />
       <button type="submit" disabled={enviando} className={BOTON_SECUNDARIO}>
         {texto}
-        {/* En la tabla hay muchos botones iguales. */}
         <span className="sr-only"> «{titulo}»</span>
       </button>
       {estado.estado === "error" && (

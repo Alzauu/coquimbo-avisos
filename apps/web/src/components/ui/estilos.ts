@@ -13,6 +13,12 @@ export const BOTON_SECUNDARIO = `inline-flex min-h-12 items-center justify-cente
 // Versión compacta del secundario, para acciones dentro de tarjetas y listas.
 export const BOTON_CHICO = `inline-flex min-h-11 items-center justify-center gap-2 rounded-(--radio-control) border-2 border-(--borde-control) bg-(--superficie) px-3 text-sm font-semibold text-(--tinta) disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:opacity-50 ${FOCO}`;
 
+// Confirmar una acción destructiva (rechazar, ocultar). Borde y texto de
+// error, sin relleno: AA en los dos temas.
+export const BOTON_PELIGRO = `inline-flex min-h-12 items-center justify-center gap-2 rounded-(--radio-control) border-2 border-(--error) bg-(--superficie) px-5 font-bold text-(--error) disabled:cursor-not-allowed disabled:opacity-60 ${FOCO}`;
+
+export const BOTON_CHICO_PELIGRO = `inline-flex min-h-11 items-center justify-center gap-2 rounded-(--radio-control) border-2 border-(--error) bg-(--superficie) px-3 text-sm font-semibold text-(--error) disabled:cursor-not-allowed disabled:opacity-60 ${FOCO}`;
+
 export const CAMPO = `min-h-12 w-full rounded-(--radio-control) border-2 border-(--borde-control) bg-(--superficie) px-3 py-2 text-(--tinta) aria-[invalid=true]:border-(--error) ${FOCO}`;
 
 export const ENLACE = `font-semibold text-(--tinta) underline underline-offset-4 ${FOCO}`;

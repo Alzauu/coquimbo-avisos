@@ -10,6 +10,7 @@ import { formatearFecha, NOMBRE_MODERACION } from "@/lib/reportes/presentacion";
 import { clienteAdmin } from "../acceso";
 import { AvisoAdmin } from "../aviso-admin";
 import { ENLACE_PELIGRO } from "../estilos";
+import { FormArchivo } from "../formularios";
 import { FormularioEdicion } from "./formulario-edicion";
 
 export const metadata: Metadata = {
@@ -93,6 +94,27 @@ export default async function EditarReportePage({
       />
 
       <section
+        aria-labelledby="titulo-archivar"
+        className="flex flex-col items-start gap-2 border-t border-zinc-300 pt-6 dark:border-zinc-700"
+      >
+        <h2 id="titulo-archivar" className="text-lg font-bold">
+          {reporte.moderacion === "archivado" ? "Restaurar" : "Archivar"}
+        </h2>
+        <p className="text-sm text-zinc-700 dark:text-zinc-300">
+          {reporte.moderacion === "archivado"
+            ? "Vuelve al estado de moderación que tenía al archivarse; si estaba publicado, vuelve al mapa."
+            : "Lo saca del mapa y de la lista habitual, sin borrarlo. Se puede restaurar."}
+        </p>
+        <FormArchivo
+          key={reporte.moderacion}
+          reporteId={reporte.id}
+          titulo={reporte.titulo}
+          archivado={reporte.moderacion === "archivado"}
+          volver=""
+        />
+      </section>
+
+      <section
         aria-labelledby="titulo-eliminar"
         className="flex flex-col items-start gap-2 border-t border-zinc-300 pt-6 dark:border-zinc-700"
       >
@@ -101,7 +123,7 @@ export default async function EditarReportePage({
         </h2>
         <p className="text-sm text-zinc-700 dark:text-zinc-300">
           Borra el reporte, su historial y sus fotos. No se puede deshacer. Si
-          solo quieres sacarlo del mapa, archívalo desde la lista.
+          solo quieres sacarlo del mapa, archívalo.
         </p>
         <Link
           href={`/admin/reportes/${reporte.id}/eliminar`}

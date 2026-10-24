@@ -70,8 +70,8 @@ export const NOMBRE_MODERACION: Record<EstadoModeracion, string> = {
 export const EXPLICACION_MODERACION: Record<EstadoModeracion, string> = {
   pendiente: "Lo revisaremos antes de mostrarlo en el mapa público.",
   aprobado: "Se muestra en el mapa público.",
-  oculto: "Moderación lo retiró del mapa público.",
-  rechazado: "Moderación lo revisó y decidió no publicarlo.",
+  oculto: "El equipo de moderación lo retiró del mapa público.",
+  rechazado: "El equipo de moderación lo revisó y decidió no publicarlo.",
   archivado: "Administración lo archivó: ya no se muestra en el mapa público.",
 };
 

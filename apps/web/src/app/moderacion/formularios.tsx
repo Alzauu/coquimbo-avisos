@@ -3,10 +3,13 @@
 import { useActionState, useId, useState } from "react";
 
 import {
+  BOTON_CHICO_PELIGRO,
+  BOTON_PELIGRO,
   BOTON_PRINCIPAL,
   BOTON_SECUNDARIO,
   CAMPO,
-  FOCO,
+  TEXTO_ERROR,
+  TEXTO_SUAVE,
 } from "@/components/ui/estilos";
 import type { Origen } from "@/lib/moderacion/esquemas";
 import { LARGO_MOTIVO } from "@/lib/moderacion/esquemas";
@@ -31,12 +34,10 @@ import {
 
 const INICIAL: EstadoAccion = { estado: "inicial" };
 
-const BOTON_PELIGRO = `min-h-11 rounded-(--radio-control) bg-red-700 px-4 py-2 font-bold text-white disabled:opacity-60 dark:bg-red-600 ${FOCO}`;
-
 function ErrorAccion({ estado, id }: { estado: EstadoAccion; id?: string }) {
   if (estado.estado !== "error") return null;
   return (
-    <p id={id} role="alert" className="text-sm text-red-700 dark:text-red-400">
+    <p id={id} role="alert" className={`text-sm ${TEXTO_ERROR}`}>
       {estado.mensaje}
     </p>
   );
@@ -96,16 +97,13 @@ export function FormRechazar({
   return (
     <form
       action={accion}
-      className="flex flex-col gap-2 rounded-md border border-zinc-300 p-3 dark:border-zinc-700"
+      className="flex flex-col gap-2 rounded-(--radio-control) border border-(--borde) p-3"
     >
       <input type="hidden" name="reporte_id" value={reporteId} />
-      <label htmlFor={`${id}-motivo`} className="font-medium">
+      <label htmlFor={`${id}-motivo`} className="font-semibold">
         Motivo del rechazo
       </label>
-      <p
-        id={`${id}-ayuda`}
-        className="text-sm text-zinc-600 dark:text-zinc-400"
-      >
+      <p id={`${id}-ayuda`} className={`text-sm ${TEXTO_SUAVE}`}>
         Quien hizo el reporte lo verá en Mis reportes (no verá quién lo
         rechazó). Entre {LARGO_MOTIVO.min} y {LARGO_MOTIVO.max} caracteres.
       </p>
@@ -158,11 +156,7 @@ export function FormOcultarFoto({
       <input type="hidden" name="reporte_id" value={reporteId} />
       <input type="hidden" name="foto_id" value={fotoId} />
       <input type="hidden" name="origen" value={origen} />
-      <button
-        type="submit"
-        disabled={enviando}
-        className="min-h-11 rounded-md border border-red-700 px-2 py-1 text-sm font-medium text-red-800 disabled:opacity-60 dark:border-red-400 dark:text-red-300"
-      >
+      <button type="submit" disabled={enviando} className={BOTON_CHICO_PELIGRO}>
         {enviando ? "Ocultando…" : "Ocultar foto"}
         <span className="sr-only"> ({descripcion})</span>
       </button>
@@ -192,13 +186,10 @@ export function FormOcultarReporte({ reporteId }: { reporteId: string }) {
   return (
     <form action={accion} className="flex flex-col gap-2">
       <input type="hidden" name="reporte_id" value={reporteId} />
-      <label htmlFor={`${id}-motivo`} className="font-medium">
+      <label htmlFor={`${id}-motivo`} className="font-semibold">
         Motivo (opcional, solo para moderación)
       </label>
-      <p
-        id={`${id}-ayuda`}
-        className="text-sm text-zinc-600 dark:text-zinc-400"
-      >
+      <p id={`${id}-ayuda`} className={`text-sm ${TEXTO_SUAVE}`}>
         El reporte dejará de verse en el mapa público. Si escribes un motivo,
         entre {LARGO_MOTIVO.min} y {LARGO_MOTIVO.max} caracteres.
       </p>
@@ -241,7 +232,7 @@ export function FormCambiarEstado({
   return (
     <form action={accion} className="flex flex-col gap-2">
       <input type="hidden" name="reporte_id" value={reporteId} />
-      <label htmlFor={`${id}-estado`} className="font-medium">
+      <label htmlFor={`${id}-estado`} className="font-semibold">
         Estado del problema
       </label>
       <div className="flex flex-wrap gap-2">

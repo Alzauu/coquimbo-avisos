@@ -9,8 +9,14 @@ export type EnlaceMenu = { href: string; texto: string };
 
 // Menú de la portada: un botón que muestra u oculta la navegación (patrón
 // de divulgación, no role="menu"). Se cierra con Escape, que devuelve el
-// foco al botón, o al tocar fuera.
-export function MenuPrincipal({ enlaces }: { enlaces: EnlaceMenu[] }) {
+// foco al botón, o al tocar fuera. Con nombre visible, saluda arriba.
+export function MenuPrincipal({
+  enlaces,
+  nombre,
+}: {
+  enlaces: EnlaceMenu[];
+  nombre: string | null;
+}) {
   const [abierto, setAbierto] = useState(false);
   const contenedor = useRef<HTMLDivElement>(null);
   const boton = useRef<HTMLButtonElement>(null);
@@ -71,6 +77,9 @@ export function MenuPrincipal({ enlaces }: { enlaces: EnlaceMenu[] }) {
         hidden={!abierto}
         className="absolute top-full right-0 mt-3 w-56 rounded-(--radio) border border-(--borde) bg-(--superficie) p-2 shadow-(--sombra)"
       >
+        {nombre && (
+          <p className="px-3 pt-2 pb-1 font-bold break-words">Hola, {nombre}</p>
+        )}
         <ul className="flex flex-col">
           {enlaces.map((enlace) => (
             <li key={enlace.href}>

@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 import {
   BOTON_CHICO,
@@ -104,6 +105,9 @@ export function ExploradorReportes({
     lat: number;
   } | null>(null);
   const [panelAbierto, setPanelAbierto] = useState(false);
+  // En el teléfono la lista y la tarjeta son hojas abajo: mientras la
+  // tarjeta está abierta la lista se pliega, y al cerrarla vuelve a abrirse.
+  const listaPlegadaPorTarjeta = useRef(false);
 
   const consulta = useMemo<Consulta>(
     () => ({
@@ -157,11 +161,24 @@ export function ExploradorReportes({
   // teléfono, lo deja en el mapa.
   function cerrarTarjeta() {
     setSeleccionado(null);
+    if (listaPlegadaPorTarjeta.current) {
+      listaPlegadaPorTarjeta.current = false;
+      // Se abre antes de devolver el foco al reporte de la lista.
+      flushSync(() => setPanelAbierto(true));
+    }
     const origen = origenFoco.current;
     origenFoco.current = null;
     if (origen?.isConnected && origen.checkVisibility()) origen.focus();
     else contenedorMapa.current?.querySelector<HTMLElement>("canvas")?.focus();
   }
+
+  const plegarListaEnTelefono = useCallback(() => {
+    if (!panelAbierto || window.matchMedia("(min-width: 48rem)").matches) {
+      return;
+    }
+    listaPlegadaPorTarjeta.current = true;
+    setPanelAbierto(false);
+  }, [panelAbierto]);
 
   const seleccionarEnMapa = useCallback(
     (id: string) => {
@@ -169,8 +186,9 @@ export function ExploradorReportes({
       if (!reporte) return;
       recordarFoco();
       setSeleccionado(reporte);
+      plegarListaEnTelefono();
     },
-    [reportes],
+    [reportes, plegarListaEnTelefono],
   );
 
   function seleccionarEnLista(reporte: ReportePublico) {
@@ -180,6 +198,7 @@ export function ExploradorReportes({
     }
     recordarFoco();
     setSeleccionado(reporte);
+    plegarListaEnTelefono();
     setDestino({
       id: reporte.id,
       lng: reporte.longitud,
@@ -249,7 +268,10 @@ export function ExploradorReportes({
             type="button"
             aria-expanded={panelAbierto}
             aria-controls="contenido-reportes"
-            onClick={() => setPanelAbierto((abierto) => !abierto)}
+            onClick={() => {
+              listaPlegadaPorTarjeta.current = false;
+              setPanelAbierto((abierto) => !abierto);
+            }}
             className={`${BOTON_CHICO} self-start md:hidden`}
           >
             {panelAbierto ? "Ocultar lista" : "Ver lista y filtros"}

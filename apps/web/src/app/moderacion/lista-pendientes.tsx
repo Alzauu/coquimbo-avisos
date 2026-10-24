@@ -3,14 +3,14 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
+import { BOTON_CHICO, TARJETA, TEXTO_SUAVE } from "@/components/ui/estilos";
+
 import { FormAprobar, FormOcultarFoto, FormRechazar } from "./formularios";
 
 // MapLibre necesita el navegador (WebGL): no se prerenderiza.
 const MapaPunto = dynamic(() => import("@/components/mapa/mapa-punto"), {
   ssr: false,
-  loading: () => (
-    <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-900" />
-  ),
+  loading: () => <div className="absolute inset-0 bg-(--superficie-2)" />,
 });
 
 export type Pendiente = {
@@ -69,13 +69,13 @@ function TarjetaPendiente({
   return (
     <article
       aria-labelledby={idTitulo}
-      className="flex flex-col gap-4 rounded-md border border-zinc-300 p-4 dark:border-zinc-700"
+      className={`flex flex-col gap-4 p-4 ${TARJETA}`}
     >
       <div className="flex flex-col gap-1">
         <h2 id={idTitulo} className="text-lg font-bold break-words">
           {reporte.titulo}
         </h2>
-        <p className="text-sm text-zinc-700 dark:text-zinc-300">
+        <p className={`text-sm ${TEXTO_SUAVE}`}>
           {reporte.categoria} · Enviado el {reporte.enviado}
         </p>
       </div>
@@ -83,17 +83,15 @@ function TarjetaPendiente({
       {reporte.descripcion ? (
         <p className="break-words whitespace-pre-line">{reporte.descripcion}</p>
       ) : (
-        <p className="text-zinc-600 italic dark:text-zinc-400">
-          Sin descripción.
-        </p>
+        <p className={`italic ${TEXTO_SUAVE}`}>Sin descripción.</p>
       )}
 
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-        <dt className="font-medium">Referencia</dt>
+        <dt className="font-semibold">Referencia</dt>
         <dd className="break-words">
           {reporte.direccion ?? "Sin dirección de referencia"}
         </dd>
-        <dt className="font-medium">Coordenadas</dt>
+        <dt className="font-semibold">Coordenadas</dt>
         <dd>
           Latitud {FORMATO_COORDENADA.format(reporte.latitud)}, longitud{" "}
           {FORMATO_COORDENADA.format(reporte.longitud)}
@@ -106,14 +104,14 @@ function TarjetaPendiente({
           aria-expanded={mapaVisible}
           aria-controls={idMapa}
           onClick={onAlternarMapa}
-          className="min-h-11 self-start rounded-md border border-zinc-400 px-4 py-2 text-sm font-medium dark:border-zinc-600"
+          className={`${BOTON_CHICO} self-start`}
         >
           {mapaVisible ? "Ocultar ubicación" : "Ver ubicación"}
         </button>
         <div
           id={idMapa}
           hidden={!mapaVisible}
-          className="relative h-56 overflow-hidden rounded-md border border-zinc-300 dark:border-zinc-700"
+          className="relative h-56 overflow-hidden rounded-(--radio-control) border-2 border-(--borde-control)"
         >
           {mapaVisible && (
             <MapaPunto
@@ -127,7 +125,7 @@ function TarjetaPendiente({
 
       <section aria-label={`Fotos de «${reporte.titulo}»`}>
         {reporte.fotos.length === 0 ? (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">Sin fotos.</p>
+          <p className={`text-sm ${TEXTO_SUAVE}`}>Sin fotos.</p>
         ) : (
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {reporte.fotos.map((foto) => {
@@ -135,7 +133,7 @@ function TarjetaPendiente({
               return (
                 <li key={foto.id} className="flex flex-col gap-2">
                   {foto.oculta ? (
-                    <p className="flex aspect-square items-center justify-center rounded-md border border-dashed border-zinc-400 p-2 text-center text-sm dark:border-zinc-600">
+                    <p className="flex aspect-square items-center justify-center rounded-(--radio-control) border-2 border-dashed border-(--borde-control) p-2 text-center text-sm">
                       Foto {foto.orden} oculta
                     </p>
                   ) : foto.url ? (
@@ -152,11 +150,11 @@ function TarjetaPendiente({
                         src={foto.url}
                         alt={`Abrir ${descripcion} en tamaño completo (pestaña nueva)`}
                         loading="lazy"
-                        className="aspect-square w-full rounded-md border border-zinc-300 object-cover dark:border-zinc-700"
+                        className="aspect-square w-full rounded-(--radio-control) border border-(--borde) object-cover"
                       />
                     </a>
                   ) : (
-                    <p className="flex aspect-square items-center justify-center rounded-md border border-zinc-300 p-2 text-center text-sm dark:border-zinc-700">
+                    <p className="flex aspect-square items-center justify-center rounded-(--radio-control) border border-(--borde) p-2 text-center text-sm">
                       Foto {foto.orden}: no disponible
                     </p>
                   )}
@@ -174,13 +172,13 @@ function TarjetaPendiente({
           </ul>
         )}
         {reporte.fotos.some((foto) => !foto.oculta) && (
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className={`mt-2 text-sm ${TEXTO_SUAVE}`}>
             Ocultar una foto no se puede deshacer desde la app.
           </p>
         )}
       </section>
 
-      <div className="flex flex-col gap-3 border-t border-zinc-300 pt-4 sm:flex-row sm:items-start dark:border-zinc-700">
+      <div className="flex flex-col gap-3 border-t border-(--borde) pt-4 sm:flex-row sm:items-start">
         <FormAprobar reporteId={reporte.id} titulo={reporte.titulo} />
         <FormRechazar reporteId={reporte.id} titulo={reporte.titulo} />
       </div>

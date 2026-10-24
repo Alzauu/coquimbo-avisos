@@ -36,6 +36,8 @@
      mantenga el contraste sobre cualquier zona del mapa. */
   --vidrio: rgb(255 255 255 / 0.92);
   --logo-interior: #d7f59a;
+  /* Íconos de los controles del mapa (gris oscuro de MapLibre). */
+  --filtro-iconos-mapa: none;
   --sombra: 0 12px 32px rgb(15 20 25 / 0.14);
   --radio: 20px;
   --radio-control: 14px;
@@ -65,6 +67,7 @@
     --exito-tinta: #c9eed5;
     --vidrio: rgb(23 26 31 / 0.92);
     --logo-interior: #0e1013;
+    --filtro-iconos-mapa: invert(1);
     --sombra: 0 12px 32px rgb(0 0 0 / 0.55);
     color-scheme: dark;
   }
@@ -89,6 +92,7 @@
   --exito-tinta: #c9eed5;
   --vidrio: rgb(23 26 31 / 0.92);
   --logo-interior: #0e1013;
+  --filtro-iconos-mapa: invert(1);
   --sombra: 0 12px 32px rgb(0 0 0 / 0.55);
   color-scheme: dark;
 }
@@ -121,6 +125,63 @@
       transform: none;
     }
   }
+}
+
+/* Botones de zoom de MapLibre con los colores del tema. Sus íconos son
+   imágenes gris oscuro (#333): en el tema oscuro se invierten (#ccc,
+   11:1 sobre --superficie). .maplibregl-map delante, como en los popups. */
+.maplibregl-map .maplibregl-ctrl-group {
+  background: var(--superficie);
+}
+.maplibregl-map .maplibregl-ctrl-group button + button {
+  border-top-color: var(--borde);
+}
+.maplibregl-map .maplibregl-ctrl-icon {
+  filter: var(--filtro-iconos-mapa);
+}
+@media (hover: hover) {
+  .maplibregl-map .maplibregl-ctrl-group button:not(:disabled):hover {
+    background-color: var(--superficie-2);
+  }
+}
+
+/* Popups de MapLibre (detalle de un corte de luz) con los colores del
+   tema. La punta es un borde: se pinta el lado que apunta al mapa. Con
+   .maplibregl-map delante, para ganar a maplibre-gl.css, que se carga
+   después. */
+.maplibregl-map .maplibregl-popup-content {
+  background: var(--superficie);
+  color: var(--tinta);
+  border-radius: var(--radio-control);
+  box-shadow: var(--sombra);
+  /* MapLibre usa 12px Helvetica: la fuente y el tamaño de la app. */
+  font-family: var(--fuente-figtree), system-ui, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+/* Botón Cerrar de al menos 24 × 24 px (WCAG 2.2). */
+.maplibregl-map .maplibregl-popup-close-button {
+  color: var(--tinta);
+  font-size: 1.25rem;
+  min-width: 1.75rem;
+  min-height: 1.75rem;
+  border-radius: var(--radio-control);
+}
+.maplibregl-map .maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.maplibregl-map .maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.maplibregl-map .maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: var(--superficie);
+}
+.maplibregl-map .maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.maplibregl-map .maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.maplibregl-map .maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: var(--superficie);
+}
+.maplibregl-map .maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--superficie);
+}
+.maplibregl-map .maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--superficie);
 }
 
 body {

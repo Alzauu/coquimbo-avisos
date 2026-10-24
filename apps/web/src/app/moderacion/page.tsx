@@ -3,6 +3,13 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 
+import {
+  ENLACE,
+  PAGINA,
+  TEXTO_ERROR,
+  TEXTO_SUAVE,
+  TITULO_PAGINA,
+} from "@/components/ui/estilos";
 import { esModerador } from "@/lib/auth/rol";
 import { tituloPagina } from "@/lib/marca";
 import { formatearFecha } from "@/lib/reportes/presentacion";
@@ -95,13 +102,13 @@ export default async function ModeracionPage({
   }));
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8">
+    <main className={PAGINA}>
       <div className="flex flex-col gap-2">
-        <Link href="/" className="self-start text-sm underline">
+        <Link href="/" className={`${ENLACE} self-start text-sm`}>
           Volver al mapa
         </Link>
-        <h1 className="text-2xl font-bold">Moderación</h1>
-        <p className="text-zinc-700 dark:text-zinc-300">
+        <h1 className={TITULO_PAGINA}>Moderación</h1>
+        <p className={TEXTO_SUAVE}>
           Reportes pendientes de revisión, del más antiguo al más reciente.
           Revisa que las fotos no muestren rostros ni patentes antes de aprobar.
         </p>
@@ -110,7 +117,7 @@ export default async function ModeracionPage({
       <AvisoModeracion codigo={aviso} />
 
       {error ? (
-        <p role="alert" className="text-red-700 dark:text-red-400">
+        <p role="alert" className={TEXTO_ERROR}>
           No pudimos cargar los reportes pendientes. Inténtalo de nuevo más
           tarde.
         </p>
@@ -118,7 +125,7 @@ export default async function ModeracionPage({
         <p>No hay reportes pendientes. ¡Todo al día!</p>
       ) : (
         <>
-          <p className="text-sm text-zinc-700 dark:text-zinc-300">
+          <p className={`text-sm ${TEXTO_SUAVE}`}>
             {pendientes.length === 1
               ? "1 reporte pendiente."
               : `${pendientes.length} reportes pendientes${pendientes.length >= 50 ? " (se muestran los 50 más antiguos)" : ""}.`}

@@ -60,10 +60,6 @@ const ID_CAMPO: Partial<Record<CampoReporte, string>> = {
   ubicacion: "ayuda-ubicacion",
 };
 
-const formatoCoordenada = new Intl.NumberFormat("es-CL", {
-  maximumFractionDigits: 5,
-});
-
 type Problema = { mensaje: string; errores: ErroresReporte };
 
 export type ReporteEditable = {
@@ -298,8 +294,7 @@ export function FormularioEdicion({
           Volver al punto original
         </button>
         <p className="text-sm text-zinc-700 dark:text-zinc-300">
-          Punto elegido: {formatoCoordenada.format(ubicacion.latitud)},{" "}
-          {formatoCoordenada.format(ubicacion.longitud)}
+          Ubicación marcada en el mapa <span aria-hidden="true">✓</span>
         </p>
         <div aria-live="polite" className="text-sm font-medium">
           {!estaEnLaSerena(ubicacion) && !errores.ubicacion && (

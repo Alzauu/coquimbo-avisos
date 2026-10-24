@@ -25,10 +25,20 @@ export default async function Home() {
   // filtro por categoría.
   if (error) console.error("categorias", error.code);
   // Los enlaces del menú son solo una comodidad: /moderacion y /admin
-  // verifican el rol por su cuenta.
-  const [modera, administra] = sesion?.claims
-    ? await Promise.all([esModerador(supabase), esAdmin(supabase)])
-    : [false, false];
+  // verifican el rol por su cuenta. El nombre visible solo sirve para
+  // saludar; sin nombre, no hay saludo.
+  const [modera, administra, nombre] = sesion?.claims
+    ? await Promise.all([
+        esModerador(supabase),
+        esAdmin(supabase),
+        supabase
+          .from("perfiles")
+          .select("nombre_visible")
+          .eq("id", sesion.claims.sub)
+          .maybeSingle()
+          .then(({ data }) => data?.nombre_visible ?? null),
+      ])
+    : [false, false, null];
 
   const enlaces: EnlaceMenu[] = [
     { href: "/mis-reportes", texto: "Mis reportes" },
@@ -41,9 +51,12 @@ export default async function Home() {
 
   return (
     // El mapa ocupa toda la pantalla; el encabezado flota arriba a la
-    // izquierda (arriba a la derecha van los botones de zoom).
+    // izquierda (arriba a la derecha van los botones de zoom). z-30: por
+    // encima de la lista (z-10) y de la tarjeta (z-20). El vidrio
+    // (backdrop-blur) y el z-index lo vuelven un contexto de apilamiento,
+    // así que su menú desplegable no puede quedar más arriba que él.
     <div className="relative flex h-dvh flex-col overflow-hidden">
-      <header className="absolute top-3 left-3 z-10 flex items-center gap-2 rounded-full bg-(--vidrio) py-1.5 pr-1.5 pl-3 shadow-(--sombra) backdrop-blur">
+      <header className="absolute top-3 left-3 z-30 flex items-center gap-2 rounded-full bg-(--vidrio) py-1.5 pr-1.5 pl-3 shadow-(--sombra) backdrop-blur">
         <Logo tamano={28} />
         <div className="pr-1 leading-tight">
           <h1 className="font-bold">{MARCA.nombre}</h1>
@@ -52,7 +65,7 @@ export default async function Home() {
           </p>
         </div>
         {sesion?.claims ? (
-          <MenuPrincipal enlaces={enlaces} />
+          <MenuPrincipal enlaces={enlaces} nombre={nombre} />
         ) : (
           <Link
             href="/ingresar"

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { FichaCategoria } from "@/components/categorias/ficha-categoria";
 import {
   AVISO_EXITO,
+  BOTON_CHICO,
   BOTON_PRINCIPAL,
   ENLACE,
   PAGINA,
@@ -16,6 +17,7 @@ import {
 import { tituloPagina } from "@/lib/marca";
 import { categoriaDe } from "@/lib/reportes/categorias";
 import {
+  type EstadoModeracion,
   EXPLICACION_MODERACION,
   formatearFecha,
   NOMBRE_ESTADO,
@@ -29,6 +31,16 @@ export const metadata: Metadata = {
 };
 
 const BUCKET_FOTOS = "reportes-fotos";
+// Etiqueta del estado de revisión. El nombre siempre va en texto; el
+// fondo o el borde solo lo refuerzan.
+const ESTILO_MODERACION: Record<EstadoModeracion, string> = {
+  pendiente: "bg-(--superficie-2) text-(--tinta)",
+  aprobado: "bg-(--exito-fondo) text-(--exito-tinta)",
+  rechazado: "border-2 border-(--error) text-(--error)",
+  oculto: "bg-(--superficie-2) text-(--tinta)",
+  archivado: "bg-(--superficie-2) text-(--tinta)",
+};
+
 // Las URLs firmadas vencen pronto: las fotos no son públicas.
 const DURACION_URL_FIRMADA = 5 * 60;
 
@@ -141,14 +153,17 @@ export default async function MisReportesPage({
                 · Enviado el {formatearFecha(reporte.creado_en)}
               </p>
 
-              <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-                <dt className="font-semibold">Revisión</dt>
-                <dd>
-                  <span className="font-semibold">
-                    {NOMBRE_MODERACION[reporte.moderacion]}
-                  </span>
-                  . {EXPLICACION_MODERACION[reporte.moderacion]}
-                </dd>
+              <p
+                className={`self-start rounded-(--radio-control) px-3 py-1 text-sm font-bold ${ESTILO_MODERACION[reporte.moderacion]}`}
+              >
+                <span className="sr-only">Revisión: </span>
+                {NOMBRE_MODERACION[reporte.moderacion]}
+              </p>
+              <p className="text-sm">
+                {EXPLICACION_MODERACION[reporte.moderacion]}
+              </p>
+
+              <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm empty:hidden">
                 {/* Solo el motivo: nunca quién moderó. El tipo generado no
                     marca la columna como opcional, pero viene NULL si no
                     hubo rechazo. */}
@@ -169,6 +184,12 @@ export default async function MisReportesPage({
                   </>
                 )}
               </dl>
+
+              {reporte.moderacion === "rechazado" && (
+                <Link href="/reportar" className={`${BOTON_CHICO} self-start`}>
+                  Crear un reporte nuevo
+                </Link>
+              )}
 
               {reporte.fotos.length > 0 && (
                 <ul className="grid grid-cols-3 gap-2">
