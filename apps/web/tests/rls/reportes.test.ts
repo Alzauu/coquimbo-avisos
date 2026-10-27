@@ -102,6 +102,8 @@ describe("vista v_reportes_publicos como anon", () => {
       "id",
       "latitud",
       "longitud",
+      "me_afecta",
+      "no_me_afecta",
       "resuelto_en",
       "titulo",
       "ubicacion",
@@ -141,9 +143,13 @@ describe("vista v_reportes_publicos como anon", () => {
       .delete()
       .eq("id", APROBADOS[0]);
 
-    expect(insertar.error?.code).toBe(PERMISO_DENEGADO);
-    expect(editar.error?.code).toBe(PERMISO_DENEGADO);
-    expect(borrar.error?.code).toBe(PERMISO_DENEGADO);
+    // Con el LEFT JOIN a los totales la vista ya no es actualizable: Postgres
+    // la rechaza (55000) antes de revisar permisos (42501). Cualquiera de los
+    // dos confirma que es de solo lectura.
+    const SOLO_LECTURA = [PERMISO_DENEGADO, "55000"];
+    expect(SOLO_LECTURA).toContain(insertar.error?.code);
+    expect(SOLO_LECTURA).toContain(editar.error?.code);
+    expect(SOLO_LECTURA).toContain(borrar.error?.code);
   });
 });
 

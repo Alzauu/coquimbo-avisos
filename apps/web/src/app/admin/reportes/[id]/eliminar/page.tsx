@@ -74,7 +74,7 @@ export default async function EliminarReportePage({
       <div className="flex flex-col gap-2 rounded-md bg-amber-50 p-4 text-amber-950 dark:bg-amber-950 dark:text-amber-50">
         <p className="font-medium">Esto no se puede deshacer.</p>
         <p>
-          Se borran el reporte, su historial, sus apoyos y comentarios, y sus
+          Se borran el reporte, su historial, sus votos y comentarios, y sus
           fotos. Solo queda un registro con la fecha, quién lo eliminó y el
           motivo, sin el contenido del reporte.
         </p>

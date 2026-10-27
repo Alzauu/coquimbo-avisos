@@ -454,46 +454,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      reporte_apoyos: {
-        Row: {
-          creado_en: string;
-          reporte_id: string;
-          usuario_id: string;
-        };
-        Insert: {
-          creado_en?: string;
-          reporte_id: string;
-          usuario_id: string;
-        };
-        Update: {
-          creado_en?: string;
-          reporte_id?: string;
-          usuario_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "reporte_apoyos_reporte_id_fkey";
-            columns: ["reporte_id"];
-            isOneToOne: false;
-            referencedRelation: "reportes";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "reporte_apoyos_reporte_id_fkey";
-            columns: ["reporte_id"];
-            isOneToOne: false;
-            referencedRelation: "v_reportes_publicos";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "reporte_apoyos_usuario_id_fkey";
-            columns: ["usuario_id"];
-            isOneToOne: false;
-            referencedRelation: "perfiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       reporte_fotos: {
         Row: {
           creado_en: string;
@@ -607,6 +567,111 @@ export type Database = {
             foreignKeyName: "reporte_historial_reporte_id_fkey";
             columns: ["reporte_id"];
             isOneToOne: false;
+            referencedRelation: "v_reportes_publicos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      reporte_votos: {
+        Row: {
+          actualizado_en: string;
+          creado_en: string;
+          reporte_id: string;
+          usuario_id: string;
+          valor: number;
+        };
+        Insert: {
+          actualizado_en?: string;
+          creado_en?: string;
+          reporte_id: string;
+          usuario_id: string;
+          valor: number;
+        };
+        Update: {
+          actualizado_en?: string;
+          creado_en?: string;
+          reporte_id?: string;
+          usuario_id?: string;
+          valor?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reporte_votos_reporte_id_fkey";
+            columns: ["reporte_id"];
+            isOneToOne: false;
+            referencedRelation: "reportes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reporte_votos_reporte_id_fkey";
+            columns: ["reporte_id"];
+            isOneToOne: false;
+            referencedRelation: "v_reportes_publicos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reporte_votos_usuario_id_fkey";
+            columns: ["usuario_id"];
+            isOneToOne: false;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      reporte_votos_limite: {
+        Row: {
+          usuario_id: string;
+          ventana_inicio: string;
+          votos: number;
+        };
+        Insert: {
+          usuario_id: string;
+          ventana_inicio: string;
+          votos: number;
+        };
+        Update: {
+          usuario_id?: string;
+          ventana_inicio?: string;
+          votos?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reporte_votos_limite_usuario_id_fkey";
+            columns: ["usuario_id"];
+            isOneToOne: true;
+            referencedRelation: "perfiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      reporte_votos_totales: {
+        Row: {
+          me_afecta: number;
+          no_me_afecta: number;
+          reporte_id: string;
+        };
+        Insert: {
+          me_afecta?: number;
+          no_me_afecta?: number;
+          reporte_id: string;
+        };
+        Update: {
+          me_afecta?: number;
+          no_me_afecta?: number;
+          reporte_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reporte_votos_totales_reporte_id_fkey";
+            columns: ["reporte_id"];
+            isOneToOne: true;
+            referencedRelation: "reportes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reporte_votos_totales_reporte_id_fkey";
+            columns: ["reporte_id"];
+            isOneToOne: true;
             referencedRelation: "v_reportes_publicos";
             referencedColumns: ["id"];
           },
@@ -899,37 +964,11 @@ export type Database = {
           id: string | null;
           latitud: number | null;
           longitud: number | null;
+          me_afecta: number | null;
+          no_me_afecta: number | null;
           resuelto_en: string | null;
           titulo: string | null;
           ubicacion: unknown;
-        };
-        Insert: {
-          categoria_id?: number | null;
-          comuna_id?: number | null;
-          creado_en?: string | null;
-          descripcion?: string | null;
-          direccion_referencia?: string | null;
-          estado?: Database["public"]["Enums"]["estado_reporte"] | null;
-          id?: string | null;
-          latitud?: never;
-          longitud?: never;
-          resuelto_en?: string | null;
-          titulo?: string | null;
-          ubicacion?: unknown;
-        };
-        Update: {
-          categoria_id?: number | null;
-          comuna_id?: number | null;
-          creado_en?: string | null;
-          descripcion?: string | null;
-          direccion_referencia?: string | null;
-          estado?: Database["public"]["Enums"]["estado_reporte"] | null;
-          id?: string | null;
-          latitud?: never;
-          longitud?: never;
-          resuelto_en?: string | null;
-          titulo?: string | null;
-          ubicacion?: unknown;
         };
         Relationships: [
           {
@@ -982,6 +1021,7 @@ export type Database = {
         Returns: string[];
       };
       es_admin: { Args: never; Returns: boolean };
+      es_mi_reporte: { Args: { reporte: string }; Returns: boolean };
       es_mi_reporte_pendiente: { Args: { reporte: string }; Returns: boolean };
       es_moderador: { Args: never; Returns: boolean };
       exigir_admin: { Args: never; Returns: undefined };
@@ -1084,6 +1124,8 @@ export type Database = {
           id: string;
           latitud: number;
           longitud: number;
+          me_afecta: number;
+          no_me_afecta: number;
           resuelto_en: string;
           titulo: string;
         }[];
@@ -1111,6 +1153,13 @@ export type Database = {
       validar_nota_moderacion: {
         Args: { nota: string; obligatoria: boolean };
         Returns: string;
+      };
+      votar_reporte: {
+        Args: { reporte: string; voto: number };
+        Returns: {
+          me_afecta: number;
+          no_me_afecta: number;
+        }[];
       };
     };
     Enums: {

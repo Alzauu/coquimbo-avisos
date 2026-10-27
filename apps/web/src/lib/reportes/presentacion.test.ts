@@ -21,6 +21,8 @@ const reporte: ReportePublico = {
   resuelto_en: null,
   latitud: -29.9,
   longitud: -71.25,
+  me_afecta: 0,
+  no_me_afecta: 0,
 };
 
 describe("filtroDeSeleccion", () => {
