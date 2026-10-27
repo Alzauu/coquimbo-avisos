@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import { FichaCategoria } from "@/components/categorias/ficha-categoria";
+import { VotosReporte } from "@/components/reportes/votos-reporte";
 import { BOTON_CHICO, ENLACE, TEXTO_SUAVE } from "@/components/ui/estilos";
 import {
   DURACION_URL_FOTO,
@@ -15,12 +16,15 @@ import {
   type FotoReporte,
 } from "@/lib/fotos/respuesta";
 import type { CategoriaVisual } from "@/lib/reportes/categorias";
+import { consultarParticipacion } from "@/lib/reportes/participacion";
 import {
   formatearFecha,
   NOMBRE_ESTADO,
   recortarTexto,
   type ReportePublico,
 } from "@/lib/reportes/presentacion";
+import type { Participacion, TotalesVotos } from "@/lib/reportes/votos";
+import { createClient } from "@/lib/supabase/client";
 
 import { moverIndice, pasoDeslizar } from "./carrusel";
 
@@ -41,10 +45,19 @@ type Carga =
   | { estado: "lista"; fotos: FotoReporte[] }
   | { estado: "error" };
 
+type CargaVotos =
+  | { estado: "cargando" }
+  | { estado: "lista"; participacion: Participacion }
+  | { estado: "error" };
+
 type Props = {
   reporte: ReportePublico;
   nombreCategoria: string;
   categoria: CategoriaVisual;
+  // Los de reportes_en_zona, o los confirmados al votar en esta visita.
+  totales: TotalesVotos;
+  conSesion: boolean;
+  onVotado: (totales: TotalesVotos) => void;
   onCerrar: () => void;
 };
 
@@ -58,6 +71,9 @@ export function TarjetaReporte({
   reporte,
   nombreCategoria,
   categoria,
+  totales,
+  conSesion,
+  onVotado,
   onCerrar,
 }: Props) {
   const titulo = useRef<HTMLHeadingElement>(null);
@@ -152,11 +168,91 @@ export function TarjetaReporte({
         )}
       </dl>
 
+      <VotosDeTarjeta
+        reporteId={reporte.id}
+        totales={totales}
+        conSesion={conSesion}
+        onVotado={onVotado}
+      />
+
       <Link href={`/reporte/${reporte.id}`} className={`${ENLACE} self-start`}>
         Ver detalle
         <span className="sr-only"> de «{reporte.titulo}»</span>
       </Link>
     </div>
+  );
+}
+
+// Votos del reporte. Con sesión, el voto propio y la autoría se piden al
+// abrir la tarjeta (como las fotos); sin sesión basta con los totales.
+function VotosDeTarjeta({
+  reporteId,
+  totales,
+  conSesion,
+  onVotado,
+}: {
+  reporteId: string;
+  totales: TotalesVotos;
+  conSesion: boolean;
+  onVotado: (totales: TotalesVotos) => void;
+}) {
+  const [carga, setCarga] = useState<CargaVotos>(
+    conSesion
+      ? { estado: "cargando" }
+      : { estado: "lista", participacion: { tipo: "sin_sesion" } },
+  );
+  const [intento, setIntento] = useState(0);
+
+  useEffect(() => {
+    if (!conSesion) return;
+    let vigente = true;
+    void consultarParticipacion(createClient(), reporteId).then(
+      (participacion) => {
+        if (!vigente) return;
+        setCarga(
+          participacion
+            ? { estado: "lista", participacion }
+            : { estado: "error" },
+        );
+      },
+    );
+    return () => {
+      vigente = false;
+    };
+  }, [conSesion, reporteId, intento]);
+
+  if (carga.estado === "cargando") {
+    return (
+      <p className={`text-sm ${TEXTO_SUAVE}`} role="status">
+        Cargando votos…
+      </p>
+    );
+  }
+  if (carga.estado === "error") {
+    return (
+      <p className={`text-sm ${TEXTO_SUAVE}`} role="status">
+        No pudimos cargar tu voto.{" "}
+        <button
+          type="button"
+          onClick={() => {
+            setCarga({ estado: "cargando" });
+            setIntento((n) => n + 1);
+          }}
+          className={ENLACE}
+        >
+          Reintentar
+        </button>
+      </p>
+    );
+  }
+  return (
+    <VotosReporte
+      reporteId={reporteId}
+      totales={totales}
+      participacion={carga.participacion}
+      variante="tarjeta"
+      onVotado={onVotado}
+    />
   );
 }
 

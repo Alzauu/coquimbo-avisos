@@ -22,6 +22,7 @@ import {
   type ReportePublico,
   ZONA_INICIAL,
 } from "@/lib/reportes/presentacion";
+import type { TotalesVotos } from "@/lib/reportes/votos";
 import { createClient } from "@/lib/supabase/client";
 
 import { FiltrosReportes } from "./filtros-reportes";
@@ -58,11 +59,14 @@ function alternar<T>(conjunto: ReadonlySet<T>, valor: T): ReadonlySet<T> {
 }
 
 // categorias: todas las de reportes, también las inactivas (ver
-// prepararCategorias).
+// prepararCategorias). conSesion: si quien mira puede votar (la base lo
+// verifica igual al votar).
 export function ExploradorReportes({
   categorias,
+  conSesion,
 }: {
   categorias: Categoria[];
+  conSesion: boolean;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const { porId: categoriasPorId, filtrables } = useMemo(
@@ -92,6 +96,13 @@ export function ExploradorReportes({
   >(() => new Set(ESTADOS_PUBLICOS));
   const [intento, setIntento] = useState(0);
   const [respuesta, setRespuesta] = useState<Respuesta | null>(null);
+  // Totales confirmados al votar en la tarjeta, por reporte: al cerrarla y
+  // reabrirla no vuelven los de la última consulta. Van aparte de
+  // respuesta para no redibujar el mapa ni la lista. Una consulta nueva ya
+  // trae los votos al día, así que los reemplaza.
+  const [totalesVotados, setTotalesVotados] = useState<
+    ReadonlyMap<string, TotalesVotos>
+  >(() => new Map());
   // Se guarda el reporte completo: la tarjeta sigue abierta aunque el
   // reporte salga de la zona visible al mover el mapa.
   const [seleccionado, setSeleccionado] = useState<ReportePublico | null>(null);
@@ -135,6 +146,7 @@ export function ExploradorReportes({
         if (!vigente) return;
         if (error) console.error("reportes_en_zona", error.code);
         setRespuesta({ consulta, reportes: data ?? [], error: !!error });
+        if (!error) setTotalesVotados(new Map());
       });
     return () => {
       vigente = false;
@@ -334,6 +346,18 @@ export function ExploradorReportes({
             categoria={categoriaDe(
               categoriasPorId.get(seleccionado.categoria_id)?.codigo,
             )}
+            totales={
+              totalesVotados.get(seleccionado.id) ?? {
+                me_afecta: seleccionado.me_afecta,
+                no_me_afecta: seleccionado.no_me_afecta,
+              }
+            }
+            conSesion={conSesion}
+            onVotado={(totales) =>
+              setTotalesVotados((actuales) =>
+                new Map(actuales).set(seleccionado.id, totales),
+              )
+            }
             onCerrar={cerrarTarjeta}
           />
         )}

@@ -10,16 +10,19 @@ import {
   FormOcultarFoto,
   FormOcultarReporte,
 } from "@/app/moderacion/formularios";
+import { VotosReporte } from "@/components/reportes/votos-reporte";
 import { TARJETA, TEXTO_SUAVE } from "@/components/ui/estilos";
 import { esModerador } from "@/lib/auth/rol";
 import { urlFotoPublica } from "@/lib/fotos/servidor";
 import { tituloPagina } from "@/lib/marca";
+import { consultarParticipacion } from "@/lib/reportes/participacion";
 import {
   type EstadoPublico,
   ESTADOS_PUBLICOS,
   formatearFecha,
   NOMBRE_ESTADO,
 } from "@/lib/reportes/presentacion";
+import type { Participacion } from "@/lib/reportes/votos";
 import { createClient } from "@/lib/supabase/server";
 
 // Detalle público de un reporte. La vista y las fotos aplican la RLS de
@@ -36,7 +39,7 @@ const cargarReporte = cache(async (id: string) => {
   const { data, error } = await supabase
     .from("v_reportes_publicos")
     .select(
-      "id, categoria_id, titulo, descripcion, direccion_referencia, estado, creado_en, resuelto_en",
+      "id, categoria_id, titulo, descripcion, direccion_referencia, estado, creado_en, resuelto_en, me_afecta, no_me_afecta",
     )
     .eq("id", id)
     .maybeSingle();
@@ -61,8 +64,26 @@ const cargarReporte = cache(async (id: string) => {
     creado_en: data.creado_en,
     categoria_id: data.categoria_id,
     estado: data.estado,
+    totales: {
+      me_afecta: data.me_afecta ?? 0,
+      no_me_afecta: data.no_me_afecta ?? 0,
+    },
   };
 });
+
+// ¿Puede votar quien mira? Si falla la consulta, se muestran los botones:
+// la base rechaza igual el voto del autor.
+async function cargarParticipacion(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  reporteId: string,
+): Promise<Participacion> {
+  return (
+    (await consultarParticipacion(supabase, reporteId)) ?? {
+      tipo: "votante",
+      voto: null,
+    }
+  );
+}
 
 export async function generateMetadata({
   params,
@@ -99,7 +120,12 @@ export default async function ReportePage({
         .order("orden"),
       supabase.auth.getClaims(),
     ]);
-  const modera = sesion?.claims ? await esModerador(supabase) : false;
+  const [modera, participacion] = sesion?.claims
+    ? await Promise.all([
+        esModerador(supabase),
+        cargarParticipacion(supabase, reporte.id),
+      ])
+    : [false, { tipo: "sin_sesion" } as const];
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8">
@@ -133,6 +159,12 @@ export default async function ReportePage({
           </>
         )}
       </dl>
+
+      <VotosReporte
+        reporteId={reporte.id}
+        totales={reporte.totales}
+        participacion={participacion}
+      />
 
       {reporte.descripcion && (
         <p className="break-words whitespace-pre-line">{reporte.descripcion}</p>

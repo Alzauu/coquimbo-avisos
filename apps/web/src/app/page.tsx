@@ -77,7 +77,10 @@ export default async function Home() {
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col">
-        <ExploradorReportes categorias={categorias ?? []} />
+        <ExploradorReportes
+          categorias={categorias ?? []}
+          conSesion={Boolean(sesion?.claims)}
+        />
       </main>
     </div>
   );
