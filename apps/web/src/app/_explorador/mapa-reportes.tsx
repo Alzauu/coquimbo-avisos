@@ -30,9 +30,15 @@ const CAPA_SELECCION = "reportes-seleccion";
 const ZOOM_MAX_GRUPOS = 15;
 const ZOOM_REPORTE = 16;
 
-// Marca de los movimientos que hace la lista (no la persona): no cambian
-// la zona consultada, así la lista no se recalcula al elegir un reporte.
-const DESDE_LISTA = { desdeLista: true };
+// Al tocar un reporte en el mapa se acerca al menos hasta este zoom (nivel
+// de calle); si ya está más cerca, no se aleja.
+const ZOOM_MIN_AL_TOCAR = 16;
+const DURACION_AL_TOCAR_MS = 500;
+
+// Marca de los movimientos que hace la app (al elegir un reporte en la
+// lista o en el mapa), no la persona: no cambian la zona consultada, así
+// la lista no se recalcula.
+const DE_LA_APP = { deLaApp: true };
 
 // En el teléfono la tarjeta es una hoja abajo de hasta 65dvh (ver
 // tarjeta-reporte.tsx): el reporte elegido se centra en la franja de mapa
@@ -358,9 +364,26 @@ export default function MapaReportes({
       });
     });
 
+    // Abre la tarjeta y acerca el reporte a nivel de calle, en la franja
+    // visible sobre la tarjeta en el teléfono. Sin animación si el sistema
+    // pide reducir el movimiento.
     mapa.on("click", CAPA_PUNTOS, (evento) => {
-      const id = evento.features?.[0]?.properties.id;
-      if (typeof id === "string") callbacks.current.onSeleccionar(id);
+      const punto = evento.features?.[0];
+      const id = punto?.properties.id;
+      if (typeof id !== "string" || punto?.geometry.type !== "Point") return;
+      callbacks.current.onSeleccionar(id);
+      const reducir = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      mapa.easeTo(
+        {
+          center: punto.geometry.coordinates as [number, number],
+          zoom: Math.max(mapa.getZoom(), ZOOM_MIN_AL_TOCAR),
+          offset: desplazamientoTarjeta(mapa.getCanvas()),
+          duration: reducir ? 0 : DURACION_AL_TOCAR_MS,
+        },
+        DE_LA_APP,
+      );
     });
 
     // Popup del corte donde se hizo clic. Si ahí también hay un reporte o
@@ -412,7 +435,7 @@ export default function MapaReportes({
       }, 250);
     };
     mapa.on("moveend", (evento) => {
-      if (!(evento as { desdeLista?: boolean }).desdeLista) avisarZona();
+      if (!(evento as { deLaApp?: boolean }).deLaApp) avisarZona();
     });
     if (!zonaInicialAvisada.current) {
       zonaInicialAvisada.current = true;
@@ -500,16 +523,13 @@ export default function MapaReportes({
           filter: ["==", ["get", "id"], destino.id],
         }).length > 0;
       if (enElCentro && !suelto) {
-        mapa.easeTo(
-          { center: centro, zoom: ZOOM_REPORTE, offset },
-          DESDE_LISTA,
-        );
+        mapa.easeTo({ center: centro, zoom: ZOOM_REPORTE, offset }, DE_LA_APP);
       }
     };
     const alTerminar = () => mapa.once("idle", revisarGrupo);
 
     mapa.once("moveend", alTerminar);
-    mapa.easeTo({ center: centro, offset }, DESDE_LISTA);
+    mapa.easeTo({ center: centro, offset }, DE_LA_APP);
     return () => {
       mapa.off("moveend", alTerminar);
       mapa.off("idle", revisarGrupo);
