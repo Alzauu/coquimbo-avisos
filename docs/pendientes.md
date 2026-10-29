@@ -13,6 +13,17 @@ Tareas acordadas que quedaron fuera de un cambio y no deben olvidarse.
   rectángulo provisorio que incluye parte de Coquimbo. Cargar el polígono
   oficial en `comunas.limites` (fuente por definir) y quitar el rectángulo.
 
+- **Consultas geográficas sin índice bajo RLS.** `reportes_en_zona` y
+  `reportes_cercanos` son `SECURITY INVOKER` sobre `v_reportes_publicos`.
+  Con la RLS de anon y authenticated, Postgres no usa el GIST
+  `idx_reportes_ubicacion` (verificado con EXPLAIN el 2026-10-28): las
+  funciones de PostGIS (`st_dwithin`, `&&`) no son LEAKPROOF y no pueden
+  evaluarse antes de la política, así que se recorre la tabla completa.
+  Con el volumen del piloto no importa. Cuando crezca (decenas de miles de
+  reportes), pasar estas funciones a `SECURITY DEFINER` con las condiciones
+  de "público" escritas explícitamente (como `votar_reporte`) y una prueba
+  que compare su resultado con la vista.
+
 ## Diseño
 
 - **Selector manual de tema (claro, oscuro o automático).** Hoy el tema

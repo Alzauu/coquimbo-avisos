@@ -37,6 +37,7 @@ import { CENTRO_LA_SERENA } from "@/lib/reportes/presentacion";
 
 import { crearReporte, type EstadoFormulario } from "./acciones";
 import { CampoTexto, ErrorCampo } from "./campos";
+import { PosiblesDuplicados } from "./posibles-duplicados";
 import { type FotoElegida, SelectorFotos } from "./selector-fotos";
 import type { Punto } from "./selector-ubicacion";
 
@@ -171,6 +172,8 @@ export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
       .join(" ") || undefined;
 
   const fueraDeLaSerena = !estaEnLaSerena(ubicacion);
+  const categoriaElegida =
+    categorias.find((c) => String(c.id) === valores.categoria_id) ?? null;
 
   return (
     <form onSubmit={enviar} noValidate className="flex flex-col gap-6">
@@ -285,6 +288,13 @@ export function FormularioReporte({ categorias }: { categorias: Categoria[] }) {
           </div>
           <ErrorCampo campo="categoria_id" errores={errores} />
         </fieldset>
+
+        {/* Con la categoría elegida, avisa de reportes parecidos cerca del
+            punto marcado. No bloquea el envío. */}
+        <PosiblesDuplicados
+          categoria={categoriaElegida}
+          ubicacion={ubicacion}
+        />
 
         <CampoTexto
           campo="titulo"

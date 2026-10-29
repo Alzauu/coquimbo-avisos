@@ -269,8 +269,10 @@ fotos y denuncias.
 
 **Base de datos:** no hay tablas nuevas.
 
-- Reutiliza `idx_reportes_ubicacion` (GIST sobre geography). Hay que confirmar
-  con `EXPLAIN` que la consulta lo usa.
+- `EXPLAIN` (2026-10-28) mostró que, bajo la RLS de anon, la consulta no usa
+  `idx_reportes_ubicacion`: PostGIS no es LEAKPROOF. Se decidió mantener
+  `SECURITY INVOKER` y aceptar el Seq Scan en el piloto (ver
+  `docs/pendientes.md`).
 - `reportes_cercanos(latitud, longitud, categoria, radio_m DEFAULT 75)`:
   - `SECURITY INVOKER` sobre `v_reportes_publicos`, con el patrón de
     `reportes_en_zona`.

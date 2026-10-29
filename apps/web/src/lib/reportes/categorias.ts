@@ -139,6 +139,32 @@ export function categoriaDe(
   return (codigo && POR_CODIGO.get(codigo)) || OTROS;
 }
 
+// Radio (en metros) para buscar posibles duplicados al reportar. El GPS del
+// teléfono se equivoca entre 20 y 50 m, así que el radio por defecto es
+// 75 m. Más chico donde dos problemas distintos suelen estar cerca (autos,
+// luminarias, puntos de basura, tramos de vereda); más grande en áreas
+// verdes, donde una plaza ocupa una manzana.
+// La base acota cualquier radio entre RADIO_DUPLICADOS_MIN y
+// RADIO_DUPLICADOS_MAX (reportes_cercanos, en
+// supabase/migrations/20261028120000_reportes_cercanos.sql).
+export const RADIO_DUPLICADOS_MIN = 10;
+export const RADIO_DUPLICADOS_MAX = 200;
+export const RADIO_DUPLICADOS_DEFECTO = 75;
+
+const RADIO_DUPLICADOS: Partial<Record<CodigoCategoria, number>> = {
+  basura: 50,
+  vehiculos: 40,
+  iluminacion: 50,
+  veredas: 50,
+  areas_verdes: 100,
+};
+
+export function radioDuplicados(codigo: string | null | undefined): number {
+  return (
+    RADIO_DUPLICADOS[categoriaDe(codigo).codigo] ?? RADIO_DUPLICADOS_DEFECTO
+  );
+}
+
 // Nombre de la imagen de la ficha en el mapa (la registra
 // components/mapa/fichas-mapa.ts). Un código desconocido usa la de Otros.
 export const PREFIJO_IMAGEN = "categoria-";

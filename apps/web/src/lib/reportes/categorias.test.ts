@@ -5,6 +5,10 @@ import {
   categoriaDe,
   imagenDeCategoria,
   ordenDeCategoria,
+  RADIO_DUPLICADOS_DEFECTO,
+  RADIO_DUPLICADOS_MAX,
+  RADIO_DUPLICADOS_MIN,
+  radioDuplicados,
 } from "./categorias";
 
 // Contraste WCAG entre dos colores #rrggbb.
@@ -72,5 +76,28 @@ describe("categoriaDe e imagenDeCategoria", () => {
     expect(ordenDeCategoria("calles")).toBe(0);
     expect(ordenDeCategoria("otros")).toBe(7);
     expect(ordenDeCategoria("semaforo")).toBe(8);
+  });
+});
+
+describe("radioDuplicados", () => {
+  it("usa 75 m por defecto y el radio propio de cada categoría", () => {
+    expect(RADIO_DUPLICADOS_DEFECTO).toBe(75);
+    expect(radioDuplicados("calles")).toBe(75);
+    expect(radioDuplicados("vehiculos")).toBe(40);
+    expect(radioDuplicados("areas_verdes")).toBe(100);
+  });
+
+  it("una categoría desconocida usa el radio de Otros", () => {
+    for (const codigo of ["semaforo", null, undefined, "toString"]) {
+      expect(radioDuplicados(codigo)).toBe(radioDuplicados("otros"));
+    }
+  });
+
+  it("todos los radios caben en el rango que acepta la base", () => {
+    for (const { codigo } of CATEGORIAS) {
+      const radio = radioDuplicados(codigo);
+      expect(radio).toBeGreaterThanOrEqual(RADIO_DUPLICADOS_MIN);
+      expect(radio).toBeLessThanOrEqual(RADIO_DUPLICADOS_MAX);
+    }
   });
 });

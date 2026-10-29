@@ -71,6 +71,15 @@ export function mensajeDeErrorVoto(error: ErrorBase): string {
   return ERROR_VOTO_GENERICO;
 }
 
+// Aviso del detalle tras sumar un «Me afecta» desde los posibles duplicados
+// de /reportar (?aviso=me_afecta). Solo se muestra este texto conocido,
+// nunca el valor de la URL.
+export const AVISO_ME_AFECTA = {
+  codigo: "me_afecta",
+  texto:
+    "Sumamos tu «Me afecta» a este reporte. No necesitas enviar uno nuevo.",
+} as const;
+
 // "1 voto", "1.024 votos".
 export function textoVotos(cantidad: number): string {
   const numero = cantidad.toLocaleString("es-CL");
