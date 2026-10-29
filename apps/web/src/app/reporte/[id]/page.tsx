@@ -25,7 +25,7 @@ import {
   VolverAlMapa,
 } from "@/components/reportes/detalle/piezas";
 import { VotosReporte } from "@/components/reportes/votos-reporte";
-import { TARJETA, TEXTO_SUAVE } from "@/components/ui/estilos";
+import { AVISO_EXITO, TARJETA, TEXTO_SUAVE } from "@/components/ui/estilos";
 import { esModerador } from "@/lib/auth/rol";
 import { urlFotoPublica } from "@/lib/fotos/servidor";
 import { tituloPagina } from "@/lib/marca";
@@ -36,7 +36,7 @@ import {
   ESTADOS_PUBLICOS,
   formatearFecha,
 } from "@/lib/reportes/presentacion";
-import type { Participacion } from "@/lib/reportes/votos";
+import { AVISO_ME_AFECTA, type Participacion } from "@/lib/reportes/votos";
 import { createClient } from "@/lib/supabase/server";
 
 // Detalle público de un reporte. La vista y las fotos aplican la RLS de
@@ -174,6 +174,11 @@ export default async function ReportePage({
       </header>
 
       <AvisoModeracion codigo={aviso} />
+      {aviso === AVISO_ME_AFECTA.codigo && (
+        <p role="status" className={`${AVISO_EXITO} font-semibold`}>
+          {AVISO_ME_AFECTA.texto}
+        </p>
+      )}
 
       <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_22rem] md:items-start md:gap-12">
         <aside className="flex flex-col gap-4 md:sticky md:top-6 md:col-start-2 md:row-start-1">

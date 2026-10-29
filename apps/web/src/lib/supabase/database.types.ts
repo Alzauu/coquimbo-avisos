@@ -1106,6 +1106,24 @@ export type Database = {
         Returns: undefined;
       };
       reemplazar_cortes_luz: { Args: { cortes: Json }; Returns: number };
+      reportes_cercanos: {
+        Args: {
+          categoria?: number;
+          latitud: number;
+          longitud: number;
+          radio_m?: number;
+        };
+        Returns: {
+          categoria_id: number;
+          creado_en: string;
+          direccion_referencia: string;
+          distancia_m: number;
+          estado: Database["public"]["Enums"]["estado_reporte"];
+          id: string;
+          me_afecta: number;
+          titulo: string;
+        }[];
+      };
       reportes_en_zona: {
         Args: {
           categorias?: number[];
