@@ -3,6 +3,7 @@
 import {
   type FilterSpecification,
   type GeoJSONSource,
+  type Map as MapaLibre,
   type MapLayerMouseEvent,
   Popup,
 } from "maplibre-gl";
@@ -50,6 +51,22 @@ function desplazamientoTarjeta(lienzo: HTMLCanvasElement): [number, number] {
   if (window.matchMedia(CONSULTA_ESCRITORIO).matches) return [0, 0];
   const visible = lienzo.clientHeight * (1 - ALTO_TARJETA_TELEFONO);
   return [0, visible / 2 - lienzo.clientHeight / 2];
+}
+
+// Centra un reporte a nivel de calle (al tocarlo en el mapa o al llegar
+// desde "Ver en el mapa"), en la franja visible sobre la tarjeta en el
+// teléfono. Sin animación si el sistema pide reducir el movimiento.
+function acercarACalle(mapa: MapaLibre, centro: [number, number]) {
+  const reducir = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  mapa.easeTo(
+    {
+      center: centro,
+      zoom: Math.max(mapa.getZoom(), ZOOM_MIN_AL_TOCAR),
+      offset: desplazamientoTarjeta(mapa.getCanvas()),
+      duration: reducir ? 0 : DURACION_AL_TOCAR_MS,
+    },
+    DE_LA_APP,
+  );
 }
 
 // Anillo del reporte elegido (3:1 sobre el mapa claro y el oscuro).
@@ -213,8 +230,15 @@ type Props = {
   // de Otros.
   codigoPorCategoria: ReadonlyMap<number, string>;
   seleccionadoId: string | null;
-  // Cada objeto nuevo centra el mapa en ese reporte (al elegir en la lista).
-  destino: { id: string; lng: number; lat: number } | null;
+  // Cada objeto nuevo centra el mapa en ese reporte: sin cambiar el zoom
+  // (al elegir en la lista) o a nivel de calle (al llegar desde "Ver en el
+  // mapa").
+  destino: {
+    id: string;
+    lng: number;
+    lat: number;
+    nivelCalle?: boolean;
+  } | null;
   onSeleccionar: (id: string) => void;
   onCambioZona: (zona: Zona) => void;
 };
@@ -364,26 +388,13 @@ export default function MapaReportes({
       });
     });
 
-    // Abre la tarjeta y acerca el reporte a nivel de calle, en la franja
-    // visible sobre la tarjeta en el teléfono. Sin animación si el sistema
-    // pide reducir el movimiento.
+    // Abre la tarjeta y acerca el reporte a nivel de calle.
     mapa.on("click", CAPA_PUNTOS, (evento) => {
       const punto = evento.features?.[0];
       const id = punto?.properties.id;
       if (typeof id !== "string" || punto?.geometry.type !== "Point") return;
       callbacks.current.onSeleccionar(id);
-      const reducir = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      mapa.easeTo(
-        {
-          center: punto.geometry.coordinates as [number, number],
-          zoom: Math.max(mapa.getZoom(), ZOOM_MIN_AL_TOCAR),
-          offset: desplazamientoTarjeta(mapa.getCanvas()),
-          duration: reducir ? 0 : DURACION_AL_TOCAR_MS,
-        },
-        DE_LA_APP,
-      );
+      acercarACalle(mapa, punto.geometry.coordinates as [number, number]);
     });
 
     // Popup del corte donde se hizo clic. Si ahí también hay un reporte o
@@ -510,6 +521,11 @@ export default function MapaReportes({
   useEffect(() => {
     if (!mapa || !destino) return;
     const centro: [number, number] = [destino.lng, destino.lat];
+    // A nivel de calle no hay grupos (ZOOM_MIN_AL_TOCAR > ZOOM_MAX_GRUPOS).
+    if (destino.nivelCalle) {
+      acercarACalle(mapa, centro);
+      return;
+    }
     const lienzo = mapa.getCanvas();
     const offset = desplazamientoTarjeta(lienzo);
     const revisarGrupo = () => {

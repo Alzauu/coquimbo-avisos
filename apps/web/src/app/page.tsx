@@ -1,26 +1,77 @@
 import Link from "next/link";
+import { z } from "zod";
 
 import { Logo } from "@/components/marca/logo";
 import { FOCO, TEXTO_SUAVE } from "@/components/ui/estilos";
 import { esAdmin, esModerador } from "@/lib/auth/rol";
 import { MARCA } from "@/lib/marca";
+import type { ReportePublico } from "@/lib/reportes/presentacion";
 import { createClient } from "@/lib/supabase/server";
 
 import { ExploradorReportes } from "./_explorador/explorador-reportes";
 import { type EnlaceMenu, MenuPrincipal } from "./menu-principal";
 
-export default async function Home() {
+type ClienteServidor = Awaited<ReturnType<typeof createClient>>;
+
+// Reporte de /?reporte=<id> ("Ver en el mapa" en el detalle). La vista
+// aplica la RLS: si no es público, no existe y el mapa abre como siempre.
+async function cargarReporteInicial(
+  supabase: ClienteServidor,
+  valor: unknown,
+): Promise<ReportePublico | null> {
+  const id = z.uuid().safeParse(valor);
+  if (!id.success) return null;
+  const { data, error } = await supabase
+    .from("v_reportes_publicos")
+    .select(
+      "id, categoria_id, titulo, descripcion, direccion_referencia, estado, creado_en, resuelto_en, latitud, longitud, me_afecta, no_me_afecta",
+    )
+    .eq("id", id.data)
+    .maybeSingle();
+  if (error) console.error("v_reportes_publicos", error.code);
+  // Los tipos generados marcan nullable toda columna de una vista.
+  if (
+    !data?.id ||
+    !data.titulo ||
+    !data.estado ||
+    !data.creado_en ||
+    data.categoria_id === null ||
+    data.latitud === null ||
+    data.longitud === null
+  ) {
+    return null;
+  }
+  return {
+    id: data.id,
+    categoria_id: data.categoria_id,
+    titulo: data.titulo,
+    descripcion: data.descripcion,
+    direccion_referencia: data.direccion_referencia,
+    estado: data.estado,
+    creado_en: data.creado_en,
+    resuelto_en: data.resuelto_en,
+    latitud: data.latitud,
+    longitud: data.longitud,
+    me_afecta: data.me_afecta ?? 0,
+    no_me_afecta: data.no_me_afecta ?? 0,
+  };
+}
+
+export default async function Home({ searchParams }: PageProps<"/">) {
   const supabase = await createClient();
-  const [{ data: sesion }, { data: categorias, error }] = await Promise.all([
-    supabase.auth.getClaims(),
-    supabase
-      .from("categorias")
-      // También las inactivas: un reporte antiguo puede tener una y debe
-      // seguir mostrando su nombre. Los filtros solo ofrecen las activas.
-      .select("id, codigo, nombre, activa")
-      .eq("tipo", "reporte")
-      .order("id"),
-  ]);
+  const { reporte } = await searchParams;
+  const [{ data: sesion }, { data: categorias, error }, reporteInicial] =
+    await Promise.all([
+      supabase.auth.getClaims(),
+      supabase
+        .from("categorias")
+        // También las inactivas: un reporte antiguo puede tener una y debe
+        // seguir mostrando su nombre. Los filtros solo ofrecen las activas.
+        .select("id, codigo, nombre, activa")
+        .eq("tipo", "reporte")
+        .order("id"),
+      cargarReporteInicial(supabase, reporte),
+    ]);
   // Sin categorías el mapa sigue funcionando, con la ficha de Otros y sin
   // filtro por categoría.
   if (error) console.error("categorias", error.code);
@@ -80,6 +131,7 @@ export default async function Home() {
         <ExploradorReportes
           categorias={categorias ?? []}
           conSesion={Boolean(sesion?.claims)}
+          reporteInicial={reporteInicial}
         />
       </main>
     </div>

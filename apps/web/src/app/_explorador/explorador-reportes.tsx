@@ -60,13 +60,16 @@ function alternar<T>(conjunto: ReadonlySet<T>, valor: T): ReadonlySet<T> {
 
 // categorias: todas las de reportes, también las inactivas (ver
 // prepararCategorias). conSesion: si quien mira puede votar (la base lo
-// verifica igual al votar).
+// verifica igual al votar). reporteInicial: el de "Ver en el mapa"
+// (/?reporte=<id>), que se abre centrado a nivel de calle.
 export function ExploradorReportes({
   categorias,
   conSesion,
+  reporteInicial,
 }: {
   categorias: Categoria[];
   conSesion: boolean;
+  reporteInicial: ReportePublico | null;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const { porId: categoriasPorId, filtrables } = useMemo(
@@ -105,7 +108,9 @@ export function ExploradorReportes({
   >(() => new Map());
   // Se guarda el reporte completo: la tarjeta sigue abierta aunque el
   // reporte salga de la zona visible al mover el mapa.
-  const [seleccionado, setSeleccionado] = useState<ReportePublico | null>(null);
+  const [seleccionado, setSeleccionado] = useState<ReportePublico | null>(
+    reporteInicial,
+  );
   const seleccionadoId = seleccionado?.id ?? null;
   // Dónde estaba el foco al abrir la tarjeta, para devolverlo al cerrarla.
   const origenFoco = useRef<HTMLElement | null>(null);
@@ -114,7 +119,17 @@ export function ExploradorReportes({
     id: string;
     lng: number;
     lat: number;
-  } | null>(null);
+    nivelCalle?: boolean;
+  } | null>(() =>
+    reporteInicial
+      ? {
+          id: reporteInicial.id,
+          lng: reporteInicial.longitud,
+          lat: reporteInicial.latitud,
+          nivelCalle: true,
+        }
+      : null,
+  );
   const [panelAbierto, setPanelAbierto] = useState(false);
   // En el teléfono la lista y la tarjeta son hojas abajo: mientras la
   // tarjeta está abierta la lista se pliega, y al cerrarla vuelve a abrirse.
