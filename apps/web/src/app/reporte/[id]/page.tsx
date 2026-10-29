@@ -10,6 +10,7 @@ import {
   FormOcultarReporte,
 } from "@/app/moderacion/formularios";
 import { FichaCategoria } from "@/components/categorias/ficha-categoria";
+import { BotonCompartir } from "@/components/reportes/detalle/boton-compartir";
 import { DescripcionPlegable } from "@/components/reportes/detalle/descripcion-plegable";
 import {
   claseTitulo,
@@ -28,8 +29,9 @@ import { VotosReporte } from "@/components/reportes/votos-reporte";
 import { AVISO_EXITO, TARJETA, TEXTO_SUAVE } from "@/components/ui/estilos";
 import { esModerador } from "@/lib/auth/rol";
 import { urlFotoPublica } from "@/lib/fotos/servidor";
-import { tituloPagina } from "@/lib/marca";
+import { MARCA, tituloPagina } from "@/lib/marca";
 import { categoriaDe } from "@/lib/reportes/categorias";
+import { resumenParaCompartir } from "@/lib/reportes/compartir";
 import { consultarParticipacion } from "@/lib/reportes/participacion";
 import {
   type EstadoPublico,
@@ -90,6 +92,17 @@ const cargarReporte = cache(async (id: string) => {
   };
 });
 
+// Nombre y código de la categoría, compartido con generateMetadata.
+const cargarCategoria = cache(async (categoriaId: number) => {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("categorias")
+    .select("nombre, codigo")
+    .eq("id", categoriaId)
+    .maybeSingle();
+  return data;
+});
+
 // ¿Puede votar quien mira? Si falla la consulta, se muestran los botones:
 // la base rechaza igual el voto del autor.
 async function cargarParticipacion(
@@ -108,10 +121,34 @@ export async function generateMetadata({
   params,
 }: PageProps<"/reporte/[id]">): Promise<Metadata> {
   const reporte = await cargarReporte((await params).id);
+  if (!reporte) {
+    return { title: tituloPagina("Reporte"), robots: { index: false } };
+  }
+  const categoria = await cargarCategoria(reporte.categoria_id);
+  const resumen = resumenParaCompartir({
+    titulo: reporte.titulo,
+    categoriaNombre: categoria?.nombre ?? null,
+    categoriaCodigo: categoria?.codigo ?? null,
+    estado: reporte.estado,
+    direccion_referencia: reporte.direccion_referencia,
+    me_afecta: reporte.totales.me_afecta,
+  });
   return {
-    title: tituloPagina(reporte?.titulo ?? "Reporte"),
-    // Contenido de vecinos: por ahora no se indexa en buscadores.
+    title: tituloPagina(reporte.titulo),
+    description: resumen,
+    // Contenido de vecinos: por ahora no se indexa en buscadores. Sí se
+    // comparte: la vista previa usa opengraph-image.tsx.
     robots: { index: false },
+    // openGraph reemplaza al del layout: se repiten siteName y locale.
+    openGraph: {
+      title: reporte.titulo,
+      description: resumen,
+      url: `/reporte/${reporte.id}`,
+      siteName: MARCA.nombre,
+      locale: "es_CL",
+      type: "article",
+    },
+    twitter: { card: "summary_large_image" },
   };
 }
 
@@ -124,21 +161,16 @@ export default async function ReportePage({
   if (!reporte) notFound();
 
   const supabase = await createClient();
-  const [{ data: categoria }, { data: fotos }, { data: sesion }] =
-    await Promise.all([
-      supabase
-        .from("categorias")
-        .select("nombre, codigo")
-        .eq("id", reporte.categoria_id)
-        .maybeSingle(),
-      // Solo fotos visibles de reportes publicados (RLS); sin ruta.
-      supabase
-        .from("reporte_fotos")
-        .select("id, orden")
-        .eq("reporte_id", reporte.id)
-        .order("orden"),
-      supabase.auth.getClaims(),
-    ]);
+  const [categoria, { data: fotos }, { data: sesion }] = await Promise.all([
+    cargarCategoria(reporte.categoria_id),
+    // Solo fotos visibles de reportes publicados (RLS); sin ruta.
+    supabase
+      .from("reporte_fotos")
+      .select("id, orden")
+      .eq("reporte_id", reporte.id)
+      .order("orden"),
+    supabase.auth.getClaims(),
+  ]);
   const [modera, participacion] = sesion?.claims
     ? await Promise.all([
         esModerador(supabase),
@@ -234,6 +266,8 @@ export default async function ReportePage({
               participacion={participacion}
             />
           </div>
+
+          <BotonCompartir reporteId={reporte.id} titulo={reporte.titulo} />
         </aside>
 
         <div className="flex flex-col gap-8 md:col-start-1 md:row-start-1">

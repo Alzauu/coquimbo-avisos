@@ -3,6 +3,7 @@ import { Figtree } from "next/font/google";
 import "./globals.css";
 
 import { MARCA } from "@/lib/marca";
+import { urlBaseMetadatos } from "@/lib/sitio";
 
 // next/font descarga la fuente al compilar y la sirve desde la app: el
 // navegador no pide nada a Google.
@@ -13,8 +14,15 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
+  // Base de las URLs absolutas de la vista previa al compartir.
+  metadataBase: urlBaseMetadatos(),
   title: MARCA.nombre,
   description: MARCA.descripcion,
+  openGraph: {
+    siteName: MARCA.nombre,
+    locale: "es_CL",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
